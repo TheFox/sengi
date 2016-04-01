@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -e
+SCRIPT_BASEDIR=$(dirname $0)
+SCRIPT_BASENAME=$(basename $0)
+
+
+cd "${SCRIPT_BASEDIR}/../tmp"
+
+which -a redis-server &> /dev/null
+redis-server ../config/redis.conf
