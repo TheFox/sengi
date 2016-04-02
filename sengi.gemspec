@@ -19,16 +19,17 @@ Gem::Specification.new do |spec|
 	
 	spec.files         = `git ls-files -z`.split("\x0").reject{ |f| f.match(%r{^(test|spec|features)/}) }
 	spec.bindir        = 'bin'
-	spec.executables   = ['find']
+	spec.executables   = ['config', 'find']
 	spec.require_paths = ['lib']
 	spec.required_ruby_version = '>=2.1.0'
 	
 	#spec.add_development_dependency 'minitest', '~>5.8'
 	
-	spec.add_dependency 'hiredis', '~>0.6'
 	spec.add_dependency 'redis', '~>3.2'
+	spec.add_dependency 'hiredis', '~>0.6'
 	spec.add_dependency 'resque', '~>1.26'
 	spec.add_dependency 'nokogiri', '~>1.6'
-
-	#spec.add_dependency 'msgpack', '~>0.7'
+	spec.add_dependency 'cookiejar', '~>0.3'
+	
+	spec.add_dependency 'thefox-ext', '~>1.4'
 end

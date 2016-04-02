@@ -1,3 +1,4 @@
 /.bundle/
 .setup
 *.rdb
+/tmp/

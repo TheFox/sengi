@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+# coding: UTF-8
+
+require 'optparse'
+require 'hiredis'
+require 'sengi'
+
+
+@options = {
+	:queue => false,
+}
+opts = OptionParser.new do |o|
+	o.banner = 'Usage: config [options] <command>'
+	o.separator('')
+	
+	o.on_tail('-h', '--help', 'Show this message.') do
+		puts o
+		puts
+		puts 'Commands'
+		puts '  domain'
+		exit 3
+	end
+end
+ARGV << '-h' if ARGV.count == 0
+commands = opts.parse(ARGV)
+command = commands.shift
+
+redis = Hiredis::Connection.new
+redis.connect('127.0.0.1', 7000)
+redis.write(['SELECT', 1])
+
+if command == 'domain'
+	subcommand = commands.shift
+	
+	if subcommand == 'ignore'
+		subsubcommand = commands.shift
+		
+		if subsubcommand == 'add'
+			commands.each do |domain|
+				redis.write(['SADD', 'domains:ignore', domain.downcase])
+				puts redis.read
+			end
+		end
+	end
+end
