@@ -75,7 +75,9 @@ module TheFox
 				end
 				
 				uri = URI(url)
-				uri.host = uri.host.downcase
+				if uri.class != URI::Generic
+					uri.host = uri.host.downcase
+				end
 				uri.fragment = nil
 				url = uri.to_s
 				if uri.request_uri == '/' && url[-1] != '/'
@@ -84,7 +86,6 @@ module TheFox
 				url = uri.to_s
 				url_hash = Digest::SHA256.hexdigest(url)
 				url_host = uri.host
-				url_host_topparts = url_host.split('.')[-2..-1].join('.')
 				
 				now = Time.now
 				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
@@ -93,10 +94,13 @@ module TheFox
 				domains_ignore = @redis.read
 				
 				url_is_ignored = false
-				if domains_ignore.include?(url_host_topparts)
-					url_is_ignored = true
-				else
-					url_is_ignored = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
+				if !url_host.nil?
+					url_host_topparts = url_host.split('.')[-2..-1].join('.')
+					if domains_ignore.include?(url_host_topparts)
+						url_is_ignored = true
+					else
+						url_is_ignored = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
+					end
 				end
 				
 				url_id = nil
