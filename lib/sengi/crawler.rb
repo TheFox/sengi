@@ -74,18 +74,19 @@ module TheFox
 					@redis.read
 				end
 				
-				now = Time.now
-				
-				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
-				
 				uri = URI(url)
 				uri.host = uri.host.downcase
+				uri.fragment = nil
+				url = uri.to_s
 				if uri.request_uri == '/' && url[-1] != '/'
 					uri = URI("#{url}/")
 				end
 				url = uri.to_s
 				url_hash = Digest::SHA256.hexdigest(url)
 				url_host_topparts = uri.host.split('.')[-2..-1].join('.')
+				
+				now = Time.now
+				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
 				
 				@redis.write(['SMEMBERS', 'domains:ignore'])
 				domains_ignore = @redis.read
