@@ -169,6 +169,10 @@ module TheFox
 					@redis.read
 					
 					http = Net::HTTP.new(uri.host, uri.port)
+					http.keep_alive_timeout = 0
+					http.open_timeout = 5
+					http.read_timeout = 5
+					http.ssl_timeout = 5
 					if uri.scheme.to_s == 'https'
 						http.use_ssl = true
 						http.verify_mode = OpenSSL::SSL::VERIFY_NONE
@@ -188,7 +192,7 @@ module TheFox
 						response = http.request(request)
 						puts 'process response'
 					rescue Exception => e
-						puts "ERROR: #{e}"
+						puts "ERROR: #{e.class} #{e}"
 						@redis.write(['HMSET', request_key_name,
 							'error', 1,
 							'error_msg', e.to_s,
