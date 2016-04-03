@@ -1,5 +1,4 @@
 
-require 'pp'
 require 'uri'
 require 'net/http'
 require 'hiredis'
@@ -7,6 +6,8 @@ require 'nokogiri'
 require 'time'
 require 'digest'
 require 'thefox-ext'
+
+require 'pp'
 
 module TheFox
 	module Sengi
@@ -57,6 +58,8 @@ module TheFox
 					@redis.write(['SELECT', 1])
 					@redis.read
 				end
+				
+				puts 'perform'
 				
 				uri = URI(url)
 				uri.host = uri.host.downcase
@@ -225,6 +228,7 @@ module TheFox
 					
 				end
 				
+				puts
 			end
 		end
 		

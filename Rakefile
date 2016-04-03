@@ -8,10 +8,10 @@ require 'sengi'
 
 
 task 'resque:setup' do
-	puts 'resque:setup'
+	#puts 'resque:setup'
 	Resque.redis = '127.0.0.1:7000'
 end
 
 task 'resque:work' do
-	puts 'resque:work'
+	#puts 'resque:work'
 end

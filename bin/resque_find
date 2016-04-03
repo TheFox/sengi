@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
 set -e
 DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
