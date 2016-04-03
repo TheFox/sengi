@@ -261,7 +261,11 @@ module TheFox
 								.map{ |link|
 									href = link['href']
 									if !href.nil?
-										URI(href)
+										begin
+											URI(href)
+										rescue Exception => e
+											nil
+										end
 									end
 								}
 								.select{ |link| !link.nil? }
