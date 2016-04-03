@@ -176,6 +176,20 @@ module TheFox
 						response_code = response.code.to_i
 						response_content_type = response['Content-Type']
 						
+						@redis.write(['SADD', "urls:#{url_id}:responses", response_id])
+						@redis.read
+						
+						@redis.write(['HMSET', "responses:#{response_id}",
+							'code', response_code,
+							'content_type', response_content_type,
+							'request_id', request_id,
+							'created', Time.now.strftime('%F %T %z'),
+							])
+						@redis.read
+						
+						@redis.write(['SADD', "responses:code:#{response_code}", response_id])
+						@redis.read
+						
 						html_doc = nil
 						if response_code == 200
 							if response_content_type[0..8] == 'text/html'
@@ -192,20 +206,6 @@ module TheFox
 						else
 							puts "wrong http status code: #{response_code}"
 						end
-						
-						@redis.write(['SADD', "urls:#{url_id}:responses", response_id])
-						@redis.read
-						
-						@redis.write(['HMSET', "responses:#{response_id}",
-							'code', response_code,
-							'content_type', response_content_type,
-							'request_id', request_id,
-							'created', Time.now.strftime('%F %T %z'),
-							])
-						@redis.read
-						
-						@redis.write(['SADD', "responses:code:#{response_code}", response_id])
-						@redis.read
 						
 						if !html_doc.nil?
 							html_doc
