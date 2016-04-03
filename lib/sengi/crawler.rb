@@ -52,6 +52,20 @@ module TheFox
 				return 999
 			end
 			
+			def self.process_new_uri(new_uri, old_uri, old_url_id, level)
+				add_to_queue = URI_CLASSES.include?(new_uri.class)
+				
+				if new_uri.class == URI::Generic
+					new_uri = URI.join(old_uri, new_uri)
+				end
+				
+				if add_to_queue
+					new_uri_s = new_uri.to_s
+					puts "link: #{level} #{new_uri_s}"
+					Resque.enqueue(TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
+				end
+			end
+			
 			def self.perform(url, parent_id = 0, level = 0)
 				if @redis.nil?
 					@redis = Hiredis::Connection.new
@@ -76,11 +90,11 @@ module TheFox
 				@redis.write(['SMEMBERS', 'domains:ignore'])
 				domains_ignore = @redis.read
 				
-				url_ignore = false
+				url_is_ignored = false
 				if domains_ignore.include?(url_host_topparts)
-					url_ignore = true
+					url_is_ignored = true
 				else
-					url_ignore = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
+					url_is_ignored = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
 				end
 				
 				url_id = nil
@@ -112,7 +126,8 @@ module TheFox
 						'request_attempt_last', now_s,
 						'parent_id', parent_id,
 						'level', level,
-						'ignore', url_ignore.to_i,
+						'is_ignored', url_is_ignored.to_i,
+						'is_redirect', 0,
 						'created', now_s,
 						])
 					@redis.read
@@ -120,7 +135,7 @@ module TheFox
 					@redis.write(['SET', url_id_key_name, url_id])
 					@redis.read
 					
-					if !url_ignore
+					if !url_is_ignored
 						url_make_request = true
 					end
 				end
@@ -160,7 +175,9 @@ module TheFox
 					
 					response = nil
 					begin
+						puts 'resquest'
 						response = http.request(request)
+						puts 'process response'
 					rescue Exception => e
 						puts "ERROR: #{e}"
 						@redis.write(['HMSET', request_key_name,
@@ -169,7 +186,7 @@ module TheFox
 							])
 						@redis.read
 						
-						@redis.write(['HSET', url_key_name, 'ignore', 1])
+						@redis.write(['HSET', url_key_name, 'is_ignored', 1])
 						@redis.read
 					end
 					
@@ -193,6 +210,8 @@ module TheFox
 						@redis.write(['SADD', "responses:code:#{response_code}", response_id])
 						@redis.read
 						
+						puts "code: #{response_code}"
+						
 						html_doc = nil
 						if response_code == 200
 							if response_content_type[0..8] == 'text/html'
@@ -203,8 +222,17 @@ module TheFox
 							else
 								puts "wrong Content-Type: #{response_content_type}"
 								
-								@redis.write(['HSET', url_key_name, 'ignore', 1])
+								@redis.write(['HSET', url_key_name, 'is_ignored', 1])
 								@redis.read
+							end
+						elsif response_code >= 301 && response_code <= 399
+							@redis.write(['HSET', url_key_name, 'is_redirect', 1])
+							@redis.read
+							
+							if !response['Location'].nil?
+								new_uri = URI(response['Location'])
+								
+								process_new_uri(new_uri, uri, url_id, level)
 							end
 						else
 							puts "wrong http status code: #{response_code}"
@@ -218,17 +246,7 @@ module TheFox
 									sw = uri_worth(uri_a, uri) <=> uri_worth(uri_b, uri)
 								}
 								.each{ |new_uri|
-									add_to_queue = URI_CLASSES.include?(new_uri.class)
-									
-									if new_uri.class == URI::Generic
-										new_uri = URI.join(uri, new_uri)
-									end
-									
-									if add_to_queue
-										new_uri_s = new_uri.to_s
-										#puts "link: #{new_uri_s}"
-										Resque.enqueue(TheFox::Sengi::Crawler, new_uri_s, url_id, level + 1)
-									end
+									process_new_uri(new_uri, uri, url_id, level)
 								}
 							
 						end
