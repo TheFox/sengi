@@ -1,6 +1,6 @@
 # Sengi SearchENGIne
 
-A web search engine using Ruby and Redis.
+A web crawler using Ruby and Redis.
 
 ## Install
 
