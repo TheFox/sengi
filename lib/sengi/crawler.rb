@@ -269,43 +269,50 @@ module TheFox
 							html_doc
 								.xpath('//meta')
 								.each{ |meta|
-									if meta['name'].downcase == 'generator'
-										generator = meta['content']
-										generator_hash = Digest::SHA256.hexdigest(generator)
+									#puts "meta: '#{meta['name']}' '#{meta['content']}'"
+									
+									meta_name = meta['name']
+									if !meta_name.nil?
+										meta_name = meta_name.downcase
 										
-										generator_id = nil
-										generator_id_key_name = "generators:id:#{generator_hash}"
-										generator_key_name = nil
-										
-										@redis.write(['EXISTS', generator_id_key_name])
-										if @redis.read.to_b
-											@redis.write(['GET', generator_id_key_name])
-											generator_id = @redis.read
+										if meta_name.downcase == 'generator'
+											generator = meta['content']
+											generator_hash = Digest::SHA256.hexdigest(generator)
 											
-											generator_key_name = "generators:#{generator_id}"
-										else
-											@redis.write(['INCR', 'generators:id'])
-											generator_id = @redis.read
+											generator_id = nil
+											generator_id_key_name = "generators:id:#{generator_hash}"
+											generator_key_name = nil
 											
-											generator_key_name = "generators:#{generator_id}"
-											@redis.write(['HMSET', generator_key_name,
-												'name', generator,
-												'hash', generator_hash,
-												'first_url_id', url_id,
-												#'last_used', Time.now.strftime('%F %T %z'),
-												'created', Time.now.strftime('%F %T %z'),
-												])
+											@redis.write(['EXISTS', generator_id_key_name])
+											if @redis.read.to_b
+												@redis.write(['GET', generator_id_key_name])
+												generator_id = @redis.read
+												
+												generator_key_name = "generators:#{generator_id}"
+											else
+												@redis.write(['INCR', 'generators:id'])
+												generator_id = @redis.read
+												
+												generator_key_name = "generators:#{generator_id}"
+												@redis.write(['HMSET', generator_key_name,
+													'name', generator,
+													'hash', generator_hash,
+													'first_url_id', url_id,
+													#'last_used', Time.now.strftime('%F %T %z'),
+													'created', Time.now.strftime('%F %T %z'),
+													])
+												@redis.read
+											end
+											
+											@redis.write(['HSET', generator_key_name, 'last_used', Time.now.strftime('%F %T %z')])
+											@redis.read
+											
+											@redis.write(['SADD', "generators:#{generator_id}:urls", url_id])
+											@redis.read
+											
+											@redis.write(['SADD', "urls:#{url_id}:generators", generator_id])
 											@redis.read
 										end
-										
-										@redis.write(['HSET', generator_key_name, 'last_used', Time.now.strftime('%F %T %z')])
-										@redis.read
-										
-										@redis.write(['SADD', "generators:#{generator_id}:urls", url_id])
-										@redis.read
-										
-										@redis.write(['SADD', "urls:#{url_id}:generators", generator_id])
-										@redis.read
 									end
 								}
 						end
