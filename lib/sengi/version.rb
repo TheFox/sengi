@@ -4,7 +4,7 @@ require 'uri'
 module TheFox
 	module Sengi
 		VERSION = '0.1.0-dev'
-		DATE = '2016-04-02'
+		DATE = '2016-04-03'
 		HOMEPAGE = 'https://github.com/TheFox/sengi'
 		
 		#HTTP_USER_AGENT = "Sengi SearchENGIne/#{VERSION}"
@@ -13,5 +13,8 @@ module TheFox
 		HTTP_REFERER = 'https://www.google.com/'
 		
 		URI_CLASSES = [URI::Generic, URI::HTTP, URI::HTTPS]
+		
+		URL_DELAY = 600
+		URL_SEPARATE_DELAY = 5
 	end
 end

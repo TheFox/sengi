@@ -1,4 +1,6 @@
 
+require 'pp'
+
 require 'uri'
 require 'net/http'
 require 'hiredis'
@@ -6,9 +8,9 @@ require 'nokogiri'
 require 'time'
 require 'digest'
 require 'openssl'
-require 'thefox-ext'
+require 'active_support/time'
 
-require 'pp'
+require 'thefox-ext'
 
 module TheFox
 	module Sengi
@@ -52,7 +54,7 @@ module TheFox
 				return 999
 			end
 			
-			def self.process_new_uri(new_uri, old_uri, old_url_id, level)
+			def self.process_new_uri(new_uri, old_uri, old_url_id, level = 0, index = 0)
 				add_to_queue = URI_CLASSES.include?(new_uri.class)
 				
 				if new_uri.class == URI::Generic
@@ -61,8 +63,11 @@ module TheFox
 				
 				if add_to_queue
 					new_uri_s = new_uri.to_s
-					puts "link: #{level} #{new_uri_s}"
-					Resque.enqueue(TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
+					delay_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
+					
+					puts "link: #{level} #{index} #{delay_time} #{new_uri_s}"
+					
+					Resque.enqueue_at(delay_time, TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
 				end
 			end
 			
@@ -262,8 +267,8 @@ module TheFox
 								.sort{ |uri_a, uri_b|
 									sw = uri_worth(uri_a, uri) <=> uri_worth(uri_b, uri)
 								}
-								.each{ |new_uri|
-									process_new_uri(new_uri, uri, url_id, level)
+								.each_with_index{ |new_uri, index|
+									process_new_uri(new_uri, uri, url_id, level, index)
 								}
 							
 							html_doc

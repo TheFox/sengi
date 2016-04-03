@@ -12,4 +12,4 @@ cd "${SCRIPT_BASEDIR}/.."
 #export BACKGROUND=yes
 #export PIDFILE=./run/queue_${QUEUE}.pid
 
-QUEUE=crawler INTERVAL=60 rake resque:work
+QUEUE=crawler INTERVAL=1 rake resque:work

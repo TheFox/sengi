@@ -25,9 +25,11 @@ Gem::Specification.new do |spec|
 	
 	#spec.add_development_dependency 'minitest', '~>5.8'
 	
+	spec.add_dependency 'activesupport', '~>4.2'
 	spec.add_dependency 'redis', '~>3.2'
 	spec.add_dependency 'hiredis', '~>0.6'
 	spec.add_dependency 'resque', '~>1.26'
+	spec.add_dependency 'resque-scheduler', '~>4.1'
 	spec.add_dependency 'nokogiri', '~>1.6'
 	spec.add_dependency 'cookiejar', '~>0.3'
 	
