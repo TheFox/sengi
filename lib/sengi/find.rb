@@ -5,6 +5,7 @@ require 'hiredis'
 require 'nokogiri'
 require 'time'
 require 'digest'
+require 'openssl'
 require 'thefox-ext'
 
 require 'pp'
@@ -51,7 +52,7 @@ module TheFox
 				return 999
 			end
 			
-			def self.perform(url)
+			def self.perform(url, parent_id = 0, level = 0)
 				if @redis.nil?
 					@redis = Hiredis::Connection.new
 					@redis.connect('127.0.0.1', 7000)
@@ -106,6 +107,8 @@ module TheFox
 						'hash', url_hash,
 						'request_attempts', 1,
 						'request_attempt_last', now_s,
+						'parent_id', parent_id,
+						'level', level,
 						'ignore', url_ignore.to_i,
 						'created', now_s,
 						])
@@ -219,7 +222,9 @@ module TheFox
 									end
 									
 									if add_to_queue
-										puts "link: #{new_uri}"
+										new_uri_s = new_uri.to_s
+										#puts "link: #{new_uri_s}"
+										Resque.enqueue(TheFox::Sengi::Find, new_uri_s, url_id, level + 1)
 									end
 								}
 							
