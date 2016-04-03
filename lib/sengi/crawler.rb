@@ -60,7 +60,7 @@ module TheFox
 					new_uri_s = new_uri.to_s
 					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
 					
-					#puts "link: #{level} #{index} #{queued_time} #{new_uri_s}"
+					puts "link: #{level} #{index} #{queued_time} #{new_uri_s}"
 					
 					Resque.enqueue_at(queued_time, TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
 				end
