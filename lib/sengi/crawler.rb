@@ -21,20 +21,13 @@ module TheFox
 			@queue = :crawler
 			@redis = nil
 			
-			def initialize
-				puts 'initialize'
-			end
-			
 			def self.uri_worth(uri, original_uri = nil)
 				c = uri.class
 				
 				is_subdomain = false
 				if !uri.host.nil? && !original_uri.nil? && !original_uri.host.nil?
-					a_ss = nil
 					a_ss = uri.host[original_uri.host]
-					#puts "#{a_ss}"
 					if a_ss.nil?
-						b_ss = nil
 						b_ss = original_uri.host[uri.host]
 						if !b_ss.nil?
 							is_subdomain = true
