@@ -8,7 +8,7 @@ SCRIPT_BASENAME=$(basename $0)
 
 cd "${SCRIPT_BASEDIR}/.."
 
-#DYNAMIC_SCHEDULE=yes
-# RESQUE_SCHEDULER_INTERVAL=60
+export QUEUE=crawler
+export PIDFILE=./run/resque_queue_${QUEUE}.pid
 
-RESQUE_SCHEDULER_INTERVAL=1 rake resque:scheduler
+kill -QUIT $(cat $PIDFILE)

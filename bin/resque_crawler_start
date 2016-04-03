@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
 set -e
 DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
@@ -9,4 +8,8 @@ SCRIPT_BASENAME=$(basename $0)
 
 cd "${SCRIPT_BASEDIR}/.."
 
-resque-web -F -L --host 127.0.0.1 --port 8282 --pid-file ./run/resque_server.pid config/resque_server_config.rb
+export QUEUE=crawler
+export PIDFILE=./run/resque_queue_${QUEUE}.pid
+export INTERVAL=1
+
+rake resque:work
