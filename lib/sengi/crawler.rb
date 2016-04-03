@@ -83,7 +83,8 @@ module TheFox
 				end
 				url = uri.to_s
 				url_hash = Digest::SHA256.hexdigest(url)
-				url_host_topparts = uri.host.split('.')[-2..-1].join('.')
+				url_host = uri.host
+				url_host_topparts = url_host.split('.')[-2..-1].join('.')
 				
 				now = Time.now
 				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
@@ -142,6 +143,9 @@ module TheFox
 				end
 				
 				if url_make_request
+					@redis.write(['SADD', 'domains:indexed', url_host])
+					@redis.read
+					
 					@redis.write(['INCR', 'requests:id'])
 					request_id = @redis.read
 					
@@ -213,18 +217,16 @@ module TheFox
 						
 						puts "code: #{response_code}"
 						
+						url_is_ignored = false
 						html_doc = nil
 						if response_code == 200
 							if response_content_type[0..8] == 'text/html'
-								puts 'ok'
-								
 								html_doc = Nokogiri::HTML(response.body)
 								html_doc.remove_namespaces!
 							else
-								puts "wrong Content-Type: #{response_content_type}"
+								#puts "wrong Content-Type: #{response_content_type}"
 								
-								@redis.write(['HSET', url_key_name, 'is_ignored', 1])
-								@redis.read
+								url_is_ignored = true
 							end
 						elsif response_code >= 301 && response_code <= 399
 							@redis.write(['HSET', url_key_name, 'is_redirect', 1])
@@ -236,7 +238,13 @@ module TheFox
 								process_new_uri(new_uri, uri, url_id, level)
 							end
 						else
-							puts "wrong http status code: #{response_code}"
+							#puts "wrong http status code: #{response_code}"
+							url_is_ignored = true
+						end
+						
+						if url_is_ignored
+							@redis.write(['HSET', url_key_name, 'is_ignored', 1])
+							@redis.read
 						end
 						
 						if !html_doc.nil?
