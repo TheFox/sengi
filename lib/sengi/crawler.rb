@@ -13,8 +13,8 @@ require 'pp'
 module TheFox
 	module Sengi
 		
-		class Find
-			@queue = :find
+		class Crawler
+			@queue = :crawler
 			@redis = nil
 			
 			def initialize
@@ -227,7 +227,7 @@ module TheFox
 									if add_to_queue
 										new_uri_s = new_uri.to_s
 										#puts "link: #{new_uri_s}"
-										Resque.enqueue(TheFox::Sengi::Find, new_uri_s, url_id, level + 1)
+										Resque.enqueue(TheFox::Sengi::Crawler, new_uri_s, url_id, level + 1)
 									end
 								}
 							

@@ -1,3 +1,3 @@
 
 require 'sengi/version'
-require 'sengi/find'
+require 'sengi/crawler'

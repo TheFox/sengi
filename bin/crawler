@@ -10,7 +10,7 @@ require 'sengi'
 	:queue => false,
 }
 opts = OptionParser.new do |o|
-	o.banner = 'Usage: find [options] <url...>'
+	o.banner = 'Usage: crawler [options] <url...>'
 	o.separator('')
 	
 	o.on_tail('-q', '--queue', 'Add URL to queue.') do
@@ -29,8 +29,8 @@ urls = opts.parse(ARGV)
 Resque.redis = '127.0.0.1:7000'
 urls.each do |url|
 	if @options[:queue]
-		Resque.enqueue(TheFox::Sengi::Find, url)
+		Resque.enqueue(TheFox::Sengi::Crawler, url)
 	else
-		TheFox::Sengi::Find.perform(url)
+		TheFox::Sengi::Crawler.perform(url)
 	end
 end

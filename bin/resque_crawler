@@ -8,8 +8,8 @@ SCRIPT_BASENAME=$(basename $0)
 
 cd "${SCRIPT_BASEDIR}/.."
 
-#export QUEUE=find
+#export QUEUE=crawler
 #export BACKGROUND=yes
 #export PIDFILE=./run/queue_${QUEUE}.pid
 
-QUEUE=find INTERVAL=0.1 rake resque:work
+QUEUE=crawler INTERVAL=0.1 rake resque:work

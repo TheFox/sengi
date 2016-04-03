@@ -1,4 +1,4 @@
-# Sengi SearchENGIne
+# Sengi Web Crawler
 
 A web crawler using Ruby and Redis.
 
