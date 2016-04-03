@@ -262,7 +262,13 @@ module TheFox
 						if !html_doc.nil?
 							html_doc
 								.xpath('//a')
-								.map{ |link| URI(link['href']) }
+								.map{ |link|
+									href = link['href']
+									if !href.nil?
+										URI(href)
+									end
+								}
+								.select{ |link| !link.nil? }
 								.sort{ |uri_a, uri_b|
 									sw = uri_worth(uri_a, uri) <=> uri_worth(uri_b, uri)
 								}
