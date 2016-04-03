@@ -19,6 +19,7 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add github.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add google
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add instagram.com
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add linkedin.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add reddit.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add twitter.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add wikipedia.org
