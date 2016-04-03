@@ -24,3 +24,8 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add wikipedia.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add ycombinator.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add youtube.com
+
+.PHONY: reset
+reset:
+	echo 'FLUSHALL' | redis-cli --pipe -p 7000
+	$(MAKE) import_domain_ignores
