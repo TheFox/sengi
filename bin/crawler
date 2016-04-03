@@ -3,6 +3,7 @@
 
 require 'optparse'
 require 'resque'
+require 'resque-scheduler'
 require 'sengi'
 
 
@@ -27,9 +28,12 @@ ARGV << '-h' if ARGV.count == 0
 urls = opts.parse(ARGV)
 
 Resque.redis = '127.0.0.1:7000'
-urls.each do |url|
+urls.each_with_index do |url, index|
 	if @options[:queue]
-		Resque.enqueue(TheFox::Sengi::Crawler, url)
+		queued_time = (TheFox::Sengi::URL_DELAY + (TheFox::Sengi::URL_SEPARATE_DELAY * index)).seconds.from_now
+		puts "queued for #{queued_time}"
+		
+		Resque.enqueue_at(queued_time, TheFox::Sengi::Crawler, url)
 	else
 		TheFox::Sengi::Crawler.perform(url)
 	end
