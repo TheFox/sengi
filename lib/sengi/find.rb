@@ -81,6 +81,7 @@ module TheFox
 					url_ignore = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
 				end
 				
+				url_id = nil
 				url_key_name = nil
 				url_make_request = false
 				
