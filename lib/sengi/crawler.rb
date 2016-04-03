@@ -63,11 +63,11 @@ module TheFox
 				
 				if add_to_queue
 					new_uri_s = new_uri.to_s
-					delay_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
+					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
 					
-					puts "link: #{level} #{index} #{delay_time} #{new_uri_s}"
+					#puts "link: #{level} #{index} #{queued_time} #{new_uri_s}"
 					
-					Resque.enqueue_at(delay_time, TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
+					Resque.enqueue_at(queued_time, TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
 				end
 			end
 			
@@ -228,7 +228,7 @@ module TheFox
 						@redis.write(['SADD', "responses:code:#{response_code}", response_id])
 						@redis.read
 						
-						puts "code: #{response_code}"
+						#puts "code: #{response_code}"
 						
 						url_is_ignored = false
 						html_doc = nil
@@ -237,8 +237,6 @@ module TheFox
 								html_doc = Nokogiri::HTML(response.body)
 								html_doc.remove_namespaces!
 							else
-								#puts "wrong Content-Type: #{response_content_type}"
-								
 								url_is_ignored = true
 							end
 						elsif response_code >= 301 && response_code <= 399
@@ -251,7 +249,6 @@ module TheFox
 								process_new_uri(new_uri, uri, url_id, level)
 							end
 						else
-							#puts "wrong http status code: #{response_code}"
 							url_is_ignored = true
 						end
 						
@@ -274,8 +271,6 @@ module TheFox
 							html_doc
 								.xpath('//meta')
 								.each{ |meta|
-									#puts "meta: '#{meta['name']}' '#{meta['content']}'"
-									
 									meta_name = meta['name']
 									if !meta_name.nil?
 										meta_name = meta_name.downcase
