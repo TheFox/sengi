@@ -12,4 +12,4 @@ export QUEUE=crawler
 export PIDFILE=./run/resque_queue_${QUEUE}.pid
 export INTERVAL=1
 
-rake resque:work
+time rake resque:work
