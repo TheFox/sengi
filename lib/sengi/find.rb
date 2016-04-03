@@ -60,7 +60,9 @@ module TheFox
 					@redis.read
 				end
 				
-				puts 'perform'
+				now = Time.now
+				
+				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
 				
 				uri = URI(url)
 				uri.host = uri.host.downcase
