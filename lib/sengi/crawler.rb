@@ -84,9 +84,6 @@ module TheFox
 				uri.fragment = nil
 				url = uri.to_s
 				
-				# TODO
-				#undefined method `request_uri' for #<URI::Generic tel:+4350...>
-				#lib/sengi/crawler.rb:86:in `perform'
 				if uri.request_uri == '/' && url[-1] != '/'
 					uri = URI("#{url}/")
 				end
