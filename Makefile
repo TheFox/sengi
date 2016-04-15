@@ -13,6 +13,7 @@ tmp run:
 .PHONY: import_domain_ignores
 import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add 4chan.org
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add amazon
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add bitbucket.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add duckduckgo.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add facebook.com
