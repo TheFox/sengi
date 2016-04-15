@@ -26,6 +26,7 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add wikipedia.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add ycombinator.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add xing.com
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add yahoo.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add youtube.com
 
 .PHONY: reset
