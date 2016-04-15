@@ -17,6 +17,7 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add bitbucket.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add duckduckgo.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add facebook.com
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add flickr.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add github.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add google
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add instagram.com
