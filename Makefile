@@ -32,7 +32,7 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add droplr.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add duckduckgo.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add ebay.com
-	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add facebook.com
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add facebook.com fb.com fb.me
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add flickr.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add getpocket.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add github.com
@@ -49,7 +49,7 @@ import_domain_ignores:
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add localhost
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add myspace.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add npmjs.com
-	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add openstreetmap.org
+	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add openstreetmap.org osm.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add packagist.org
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add pastebin.com
 	RUBYOPT=-rbundler/setup ruby ./bin/config domain ignore add paypal.com
