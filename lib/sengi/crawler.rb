@@ -70,6 +70,7 @@ module TheFox
 			end
 			
 			def self.perform(url, parent_id = 0, level = 0)
+				# Redis Setup
 				if @redis.nil?
 					@redis = Hiredis::Connection.new
 					@redis.connect('127.0.0.1', 7000)
@@ -77,6 +78,7 @@ module TheFox
 					@redis.read
 				end
 				
+				# URL object
 				uri = URI(url)
 				if uri.class != URI::Generic
 					uri.host = uri.host.downcase
@@ -84,6 +86,7 @@ module TheFox
 				uri.fragment = nil
 				url = uri.to_s
 				
+				# Ignore fragments.
 				if uri.request_uri == '/' && url[-1] != '/'
 					uri = URI("#{url}/")
 				end
@@ -94,15 +97,24 @@ module TheFox
 				now = Time.now
 				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
 				
+				# Read Domains Blacklist
 				@redis.write(['SMEMBERS', 'domains:ignore'])
 				domains_ignore = @redis.read
 				
+				# Check if the current URL domain (second- + top-level) is in the blacklist.
 				url_is_ignored = false
 				if !url_host.nil?
+					# This splits for example the domain 'www.facebook.com' to
+					# ['www', 'facebook', 'com'] and then uses the last two parts
+					# ['facebook', 'com'] to make the check.
 					url_host_topparts = url_host.split('.')[-2..-1].join('.')
+					
 					if domains_ignore.include?(url_host_topparts)
 						url_is_ignored = true
 					else
+						# If the domain wasn't found in the blacklist search with regex.
+						# For example: if you blacklist 'google' the domain 'google.com'
+						# will not be found by the parent if condition. So search also with regex.
 						url_is_ignored = domains_ignore.grep(Regexp.new(url_host_topparts)).count > 0
 					end
 				end
@@ -111,24 +123,30 @@ module TheFox
 				url_key_name = nil
 				url_make_request = false
 				
+				# Check if a URL already exists.
 				url_id_key_name = "urls:id:#{url_hash}"
 				@redis.write(['EXISTS', url_id_key_name])
 				if @redis.read.to_b
+					# A URL already exists.
 					@redis.write(['GET', url_id_key_name])
 					url_id = @redis.read
 					url_key_name = "urls:#{url_id}"
 					
+					# Increase the URL attempts.
 					@redis.write(['HINCRBY', url_key_name, 'request_attempts', 1])
 					@redis.read
 					
 					@redis.write(['HSET', url_key_name, 'request_attempt_last', Time.now.strftime('%F %T %z')])
 					@redis.read
 				else
+					# New URL. Increase the URLs ID.
 					@redis.write(['INCR', 'urls:id'])
 					url_id = @redis.read
 					url_key_name = "urls:#{url_id}"
 					
 					now_s = Time.now.strftime('%F %T %z')
+					
+					# Insert the new URL.
 					@redis.write(['HMSET', url_key_name,
 						'url', url,
 						'hash', url_hash,
@@ -142,26 +160,32 @@ module TheFox
 						])
 					@redis.read
 					
+					# Set the URL Hash to URL ID reference.
 					@redis.write(['SET', url_id_key_name, url_id])
 					@redis.read
 					
 					if !url_is_ignored
+						# If the URL is not in the blacklist then make the request.
 						url_make_request = true
 					end
 				end
 				
 				if url_make_request
+					# Insert the URL domain.
 					@redis.write(['SADD', 'domains:indexed', url_host])
 					@redis.read
 					
+					# Increase the Requests ID.
 					@redis.write(['INCR', 'requests:id'])
 					request_id = @redis.read
 					
 					puts "get u='#{url_id}' r='#{request_id}' '#{uri}' #{url_hash}"
 					
+					# Save the Requests per URL.
 					@redis.write(['SADD', "urls:#{url_id}:requests", request_id])
 					@redis.read
 					
+					# Create a new Request.
 					request_key_name = "requests:#{request_id}"
 					@redis.write(['HMSET', request_key_name,
 						'url_id', url_id,
@@ -172,6 +196,7 @@ module TheFox
 						])
 					@redis.read
 					
+					# HTTP Request
 					http = Net::HTTP.new(uri.host, uri.port)
 					http.keep_alive_timeout = 0
 					http.open_timeout = 5
@@ -182,6 +207,7 @@ module TheFox
 						http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 					end
 					
+					# Send HTTP Request
 					request = Net::HTTP::Get.new(uri.request_uri)
 					request['User-Agent'] = HTTP_USER_AGENT
 					request['Referer'] = HTTP_REFERER
@@ -197,25 +223,34 @@ module TheFox
 						puts 'process response'
 					rescue Exception => e
 						puts "ERROR: #{e.class} #{e}"
+						
+						# Save the error and error message to the URL Request.
 						@redis.write(['HMSET', request_key_name,
 							'error', 1,
 							'error_msg', e.to_s,
 							])
 						@redis.read
 						
+						# Ignore the URL if it failed.
 						@redis.write(['HSET', url_key_name, 'is_ignored', 1])
 						@redis.read
 					end
 					
 					if !response.nil?
+						# HTTP Request was successfull.
+						
+						# Increase the Responses ID.
 						@redis.write(['INCR', 'responses:id'])
 						response_id = @redis.read
+						
 						response_code = response.code.to_i
 						response_content_type = response['Content-Type']
 						
+						# Add the Response ID to the URL.
 						@redis.write(['SADD', "urls:#{url_id}:responses", response_id])
 						@redis.read
 						
+						# Insert the new Response.
 						@redis.write(['HMSET', "responses:#{response_id}",
 							'code', response_code,
 							'content_type', response_content_type,
@@ -224,6 +259,7 @@ module TheFox
 							])
 						@redis.read
 						
+						# Add the Response to the Response Code.
 						@redis.write(['SADD', "responses:code:#{response_code}", response_id])
 						@redis.read
 						
@@ -236,6 +272,7 @@ module TheFox
 								html_doc = Nokogiri::HTML(response.body)
 								html_doc.remove_namespaces!
 							else
+								# Ignore the URL if the response content type isn't HTML.
 								url_is_ignored = true
 							end
 						elsif response_code >= 301 && response_code <= 399
@@ -243,6 +280,7 @@ module TheFox
 							@redis.read
 							
 							if !response['Location'].nil?
+								# Follow the URL.
 								new_uri = URI(response['Location'])
 								
 								process_new_uri(new_uri, uri, url_id, level)
@@ -257,6 +295,8 @@ module TheFox
 						end
 						
 						if !html_doc.nil?
+							
+							# Process all <a> tags found on the response page.
 							html_doc
 								.xpath('//a')
 								.map{ |link|
@@ -277,6 +317,7 @@ module TheFox
 									process_new_uri(new_uri, uri, url_id, level, index)
 								}
 							
+							# Process all <meta> tags found on the response page.
 							html_doc
 								.xpath('//meta')
 								.each{ |meta|
@@ -285,6 +326,8 @@ module TheFox
 										meta_name = meta_name.downcase
 										
 										if meta_name.downcase == 'generator'
+											# Process all generator <meta> tags.
+											
 											generator = meta['content']
 											generator_hash = Digest::SHA256.hexdigest(generator)
 											
@@ -294,11 +337,14 @@ module TheFox
 											
 											@redis.write(['EXISTS', generator_id_key_name])
 											if @redis.read.to_b
+												# Found existing generator.
+												
 												@redis.write(['GET', generator_id_key_name])
 												generator_id = @redis.read
 												
 												generator_key_name = "generators:#{generator_id}"
 											else
+												# New generator. Increase the Generators ID.
 												@redis.write(['INCR', 'generators:id'])
 												generator_id = @redis.read
 												
@@ -313,12 +359,15 @@ module TheFox
 												@redis.read
 											end
 											
+											# Always overwrite the last used timestamp.
 											@redis.write(['HSET', generator_key_name, 'last_used', Time.now.strftime('%F %T %z')])
 											@redis.read
 											
+											# Add the URL to the Generator.
 											@redis.write(['SADD', "generators:#{generator_id}:urls", url_id])
 											@redis.read
 											
+											# Add the Generator to the URL.
 											@redis.write(['SADD', "urls:#{url_id}:generators", generator_id])
 											@redis.read
 										end
