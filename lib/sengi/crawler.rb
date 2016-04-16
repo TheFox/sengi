@@ -202,7 +202,10 @@ module TheFox
 						response_id = @redis.read
 						
 						response_code = response.code.to_i
-						response_content_type = response['Content-Type']
+						response_content_type = ''
+						if !response['Content-Type'].nil?
+							response_content_type = response['Content-Type']
+						end
 						
 						# Add the Response ID to the URL.
 						@redis.write(['SADD', "urls:#{url_id}:responses", response_id])
