@@ -1,7 +1,7 @@
 
 module TheFox
 	module Sengi
-		VERSION = '0.1.0-dev.1'
+		VERSION = '0.1.0-dev.2'
 		DATE = '2016-04-16'
 		HOMEPAGE = 'https://github.com/TheFox/sengi'
 		
@@ -10,7 +10,7 @@ module TheFox
 		
 		HTTP_REFERER = 'https://www.google.com/'
 		
-		URL_DELAY = 600
+		URL_DELAY = 5
 		URL_SEPARATE_DELAY = 5
 	end
 end

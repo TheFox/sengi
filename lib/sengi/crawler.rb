@@ -37,6 +37,48 @@ module TheFox
 				end
 			end
 			
+			def self.insert_domain(domain_original)
+				domain_nowww = domain_original.sub(/^www\./, '')
+				
+				domain_nowww_hash = Digest::SHA256.hexdigest(domain_nowww)
+				domain_original_hash = Digest::SHA256.hexdigest(domain_original)
+				
+				# Add Domain to the indexed list.
+				@redis.write(['SADD', 'domains:indexed', domain_nowww])
+				nowww_is_new = @redis.read.to_b
+				
+				# Check if a Domain already exists.
+				domain_id_key_name = "domains:id:#{domain_nowww_hash}"
+				@redis.write(['EXISTS', domain_id_key_name])
+				if @redis.read.to_b
+					# A Domain already exists.
+					@redis.write(['GET', domain_id_key_name])
+					domain_id = @redis.read
+				else
+					# New Domain. Increase the Domains ID.
+					@redis.write(['INCR', 'domains:id'])
+					domain_id = @redis.read
+					
+					now_s = Time.now.strftime('%F %T %z')
+					
+					# Insert the new Domain.
+					@redis.write(['HMSET', "domains:#{domain_id}",
+						'domain_nowww', domain_nowww,
+						'domain_original', domain_original,
+						'hash_nowww', domain_nowww_hash,
+						'hash_original', domain_original_hash,
+						'created', now_s,
+						])
+					@redis.read
+					
+					# Set the Domain Hash to Domain ID reference.
+					@redis.write(['SET', domain_id_key_name, domain_id])
+					@redis.read
+				end
+				
+				domain_id
+			end
+			
 			def self.perform(url, parent_id = 0, level = 0)
 				# Redis Setup
 				if @redis.nil?
@@ -52,8 +94,7 @@ module TheFox
 				url_hash = uri.to_hash
 				url_host = uri.ruri.host
 				
-				now = Time.now
-				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
+				puts "#{Time.now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
 				
 				# Read Domains Blacklist
 				@redis.write(['SMEMBERS', 'domains:ignore'])
@@ -129,15 +170,18 @@ module TheFox
 				end
 				
 				if url_make_request
-					# Insert the URL domain.
-					@redis.write(['SADD', 'domains:indexed', url_host])
+					
+					domain_id = insert_domain(url_host)
+					
+					# Save the URLs per Domain.
+					@redis.write(['SADD', "domains:#{domain_id}:urls", url_id])
 					@redis.read
 					
 					# Increase the Requests ID.
 					@redis.write(['INCR', 'requests:id'])
 					request_id = @redis.read
 					
-					puts "get u='#{url_id}' r='#{request_id}' '#{uri}' #{url_hash}"
+					puts "#{Time.now.strftime('%F %T %z')} get #{domain_id} #{url_id} #{request_id} '#{uri}'"
 					
 					# Save the Requests per URL.
 					@redis.write(['SADD', "urls:#{url_id}:requests", request_id])
