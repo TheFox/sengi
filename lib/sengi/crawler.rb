@@ -318,6 +318,10 @@ module TheFox
 													'created', Time.now.strftime('%F %T %z'),
 													])
 												@redis.read
+												
+												# Set the Generator Hash to Generator ID reference.
+												@redis.write(['SET', generator_id_key_name, generator_id])
+												@redis.read
 											end
 											
 											# Always overwrite the last used timestamp.
