@@ -1,5 +1,6 @@
 
 require 'uri'
+require 'digest'
 
 module TheFox
 	module Sengi
