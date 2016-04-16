@@ -5,7 +5,7 @@ ALL_TARGETS_EXT = tmp run
 include Makefile.common
 
 dev:
-	RUBYOPT=-rbundler/setup ruby ./bin/crawler -q https://dev.fox21.at/sengi/
+	RUBYOPT=-rbundler/setup ruby ./bin/crawler -q http://dev.fox21.at/sengi/
 
 run:
 	$(MKDIR) $@
