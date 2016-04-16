@@ -5,10 +5,12 @@ DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
 
+id=${1:-0}
+
 
 cd "${SCRIPT_BASEDIR}/.."
 
 export QUEUE=crawler
-export PIDFILE=./run/resque_queue_${QUEUE}.pid
+export PIDFILE=./run/resque_queue_${QUEUE}_${id}.pid
 
 kill -QUIT $(cat $PIDFILE)
