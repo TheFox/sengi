@@ -267,7 +267,7 @@ module TheFox
 										end
 									end
 								}
-								.select{ |link| !link.nil? }
+								.select{ |link| !link.nil? && link.is_valid? }
 								.sort{ |uri_a, uri_b|
 									uri_a.weight(uri) <=> uri_b.weight(uri)
 								}
