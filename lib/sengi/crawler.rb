@@ -21,49 +21,17 @@ module TheFox
 			@queue = :crawler
 			@redis = nil
 			
-			def self.uri_worth(uri, original_uri = nil)
-				c = uri.class
+			def self.enqueue(new_uri, old_uri, old_url_id, level = 0, index = 0, debug = false)
+				#new_uri = URI.join(old_uri, new_uri)
+				new_uri = old_uri.join(new_uri)
 				
-				is_subdomain = false
-				if !uri.host.nil? && !original_uri.nil? && !original_uri.host.nil?
-					a_ss = uri.host[original_uri.host]
-					if a_ss.nil?
-						b_ss = original_uri.host[uri.host]
-						if !b_ss.nil?
-							is_subdomain = true
-						end
-					else
-						is_subdomain = true
-					end
-				end
-				
-				if false
-				elsif c == URI::Generic then return 100
-				elsif c == URI::HTTP
-					if is_subdomain
-						return 200
-					end
-					return 250
-				elsif c == URI::HTTPS then return 290
-				end
-				return 999
-			end
-			
-			def self.process_new_uri(new_uri, old_uri, old_url_id, level = 0, index = 0)
-				add_to_queue = URI_CLASSES.include?(new_uri.class)
-				
-				if new_uri.class == URI::Generic
-					new_uri = URI.join(old_uri, new_uri)
-				end
-				
-				if add_to_queue
+				if new_uri.is_valid?
 					new_uri_s = new_uri.to_s
+					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
 					
-					if new_uri_s[0..10] != 'javascript:'
-						queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
-						
-						puts "link: #{level} #{index} #{queued_time} #{new_uri_s}"
-						
+					puts "link: #{level} #{index} #{queued_time} #{new_uri_s}"
+					
+					if !debug
 						Resque.enqueue_at(queued_time, TheFox::Sengi::Crawler, new_uri_s, old_url_id, level + 1)
 					end
 				end
@@ -79,20 +47,10 @@ module TheFox
 				end
 				
 				# URL object
-				uri = URI(url)
-				if uri.class != URI::Generic
-					uri.host = uri.host.downcase
-				end
-				uri.fragment = nil
+				uri = Uri.new(url)
 				url = uri.to_s
-				
-				# Ignore fragments.
-				if uri.request_uri == '/' && url[-1] != '/'
-					uri = URI("#{url}/")
-				end
-				url = uri.to_s
-				url_hash = Digest::SHA256.hexdigest(url)
-				url_host = uri.host
+				url_hash = uri.to_hash
+				url_host = uri.ruri.host
 				
 				now = Time.now
 				puts "#{now.strftime('%F %T %z')} perform: #{parent_id}, #{level} - #{url}"
@@ -197,18 +155,18 @@ module TheFox
 					@redis.read
 					
 					# HTTP Request
-					http = Net::HTTP.new(uri.host, uri.port)
+					http = Net::HTTP.new(uri.ruri.host, uri.ruri.port)
 					http.keep_alive_timeout = 0
 					http.open_timeout = 5
 					http.read_timeout = 5
 					http.ssl_timeout = 5
-					if uri.scheme.to_s == 'https'
+					if uri.ruri.scheme.to_s == 'https'
 						http.use_ssl = true
 						http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 					end
 					
 					# Send HTTP Request
-					request = Net::HTTP::Get.new(uri.request_uri)
+					request = Net::HTTP::Get.new(uri.ruri.request_uri)
 					request['User-Agent'] = HTTP_USER_AGENT
 					request['Referer'] = HTTP_REFERER
 					request['Connection'] = 'close'
@@ -281,9 +239,9 @@ module TheFox
 							
 							if !response['Location'].nil?
 								# Follow the URL.
-								new_uri = URI(response['Location'])
+								new_uri = Uri.new(response['Location'])
 								
-								process_new_uri(new_uri, uri, url_id, level)
+								enqueue(new_uri, uri, url_id, level)
 							end
 						else
 							url_is_ignored = true
@@ -303,7 +261,7 @@ module TheFox
 									href = link['href']
 									if !href.nil?
 										begin
-											URI(href)
+											Uri.new(href)
 										rescue Exception => e
 											nil
 										end
@@ -311,10 +269,10 @@ module TheFox
 								}
 								.select{ |link| !link.nil? }
 								.sort{ |uri_a, uri_b|
-									sw = uri_worth(uri_a, uri) <=> uri_worth(uri_b, uri)
+									uri_a.weight(uri) <=> uri_b.weight(uri)
 								}
 								.each_with_index{ |new_uri, index|
-									process_new_uri(new_uri, uri, url_id, level, index)
+									enqueue(new_uri, uri, url_id, level, index)
 								}
 							
 							# Process all <meta> tags found on the response page.

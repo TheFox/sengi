@@ -5,9 +5,9 @@ ALL_TARGETS_EXT = tmp run
 include Makefile.common
 
 dev:
-	RUBYOPT=-rbundler/setup ruby ./bin/crawler https://fox21.at
+	RUBYOPT=-rbundler/setup ruby ./bin/crawler -q https://dev.fox21.at/sengi/
 
-tmp run:
+run:
 	$(MKDIR) $@
 
 .PHONY: import_domain_ignores
@@ -74,3 +74,7 @@ import_domain_ignores:
 reset:
 	echo 'FLUSHALL' | redis-cli --pipe -p 7000
 	$(MAKE) import_domain_ignores
+
+.PHONY: test
+test:
+	RUBYOPT=-w $(BUNDLER) exec ./tests/ts_all.rb
