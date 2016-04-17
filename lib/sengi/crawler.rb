@@ -10,6 +10,7 @@ require 'nokogiri'
 require 'time'
 require 'digest'
 require 'openssl'
+require 'zlib'
 require 'active_support/time'
 
 require 'thefox-ext'
@@ -215,7 +216,7 @@ module TheFox
 					request['Referer'] = HTTP_REFERER
 					request['Connection'] = 'close'
 					request['Accept'] = 'text/html'
-					request['Accept-Encoding'] = ''
+					request['Accept-Encoding'] = 'gzip;q=1.0,identity;q=0.6'
 					request['Accept-Language'] = 'en,en-US;q=0.8'
 					
 					response = nil
@@ -251,6 +252,13 @@ module TheFox
 							response_content_type = response['Content-Type']
 						end
 						
+						response_body = ''
+						if !response['Content-Encoding'].nil? && response['Content-Encoding'].downcase == 'gzip'
+							response_body = Zlib::GzipReader.new(StringIO.new(response.body)).read
+						else
+							response_body = response.body
+						end
+						
 						# Add the Response ID to the URL.
 						@redis.write(['SADD', "urls:#{url_id}:responses", response_id])
 						@redis.read
@@ -274,7 +282,7 @@ module TheFox
 						html_doc = nil
 						if response_code == 200
 							if response_content_type[0..8] == 'text/html'
-								html_doc = Nokogiri::HTML(response.body)
+								html_doc = Nokogiri::HTML(response_body)
 								html_doc.remove_namespaces!
 							else
 								# Ignore the URL if the response content type isn't HTML.
