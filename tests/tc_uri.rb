@@ -39,6 +39,18 @@ class TestUri < MiniTest::Test
 		assert_equal('b1ae8ba07f44d280254af4d1db914de03ce87b027e1c291ffcb9211c7712c9d1', uri.to_hash)
 	end
 	
+	def test_id
+		uri = TheFox::Sengi::Uri.new('http://www.example.com/index.html')
+		
+		uri.id = 21
+		assert_equal(21, uri.id)
+		assert_equal('urls:21', uri.key_name)
+		
+		uri.id = 24
+		assert_equal(24, uri.id)
+		assert_equal('urls:24', uri.key_name)
+	end
+	
 	def test_valid
 		uri = TheFox::Sengi::Uri.new('http://example.com')
 		assert_equal(true, uri.is_valid?)

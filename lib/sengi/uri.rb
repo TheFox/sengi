@@ -12,6 +12,22 @@ module TheFox
 			def initialize(url)
 				@uri = nil
 				@hash = nil
+				@is_blacklisted = nil
+				@is_ignored = nil
+				@hash_id_key_name = nil
+				@id = nil
+				@key_name = nil
+				@domain_nowww = nil
+				@domain_nowww_hash = nil
+				@domain_original_hash = nil
+				@domain_hash_id_key_name = nil
+				@domain_id = nil
+				@domain_key_name = nil
+				@request_id = nil
+				@request_key_name = nil
+				@response_id = nil
+				@response_key_name = nil
+				@response_content_type = ''
 				
 				begin
 					@uri = URI(url)
@@ -24,9 +40,11 @@ module TheFox
 					append_slash
 					host_downcase
 					remove_fragment
+					domain_setup
 					
 					@uri_class = @uri.class
 					@hash = Digest::SHA256.hexdigest(to_s)
+					@hash_id_key_name = "urls:id:#{@hash}"
 				end
 			end
 			
@@ -36,6 +54,110 @@ module TheFox
 			
 			def ruri
 				@uri
+			end
+			
+			def is_blacklisted=(is_blacklisted)
+				@is_blacklisted = is_blacklisted
+			end
+			
+			def is_blacklisted
+				@is_blacklisted
+			end
+			
+			def is_ignored=(is_ignored)
+				@is_ignored = is_ignored
+			end
+			
+			def is_ignored
+				@is_ignored
+			end
+			
+			# def hash_id_key_name=(hash_id_key_name)
+			# 	@hash_id_key_name = hash_id_key_name
+			# end
+			
+			def hash_id_key_name
+				@hash_id_key_name
+			end
+			
+			def id=(id)
+				@id = id
+				@key_name = "urls:#{@id}"
+			end
+			
+			def id
+				@id
+			end
+			
+			# def key_name=(key_name)
+			# 	@key_name = key_name
+			# end
+			
+			def key_name
+				@key_name
+			end
+			
+			def domain_nowww
+				@domain_nowww
+			end
+			
+			def domain_nowww_hash
+				@domain_nowww_hash
+			end
+			
+			def domain_original_hash
+				@domain_original_hash
+			end
+			
+			def domain_hash_id_key_name
+				@domain_hash_id_key_name
+			end
+			
+			def domain_id=(domain_id)
+				@domain_id = domain_id
+				@domain_key_name = "domains:#{@domain_id}"
+			end
+			
+			def domain_id
+				@domain_id
+			end
+			
+			def domain_key_name
+				@domain_key_name
+			end
+			
+			def request_id=(request_id)
+				@request_id = request_id
+				@request_key_name = "requests:#{@request_id}"
+			end
+			
+			def request_id
+				@request_id
+			end
+			
+			def request_key_name
+				@request_key_name
+			end
+			
+			def response_id=(response_id)
+				@response_id = response_id
+				@response_key_name = "responses:#{@response_id}"
+			end
+			
+			def response_id
+				@response_id
+			end
+			
+			def response_key_name
+				@response_key_name
+			end
+			
+			def response_content_type=(response_content_type)
+				@response_content_type = response_content_type.to_s
+			end
+			
+			def response_content_type
+				@response_content_type
 			end
 			
 			def to_s
@@ -121,6 +243,15 @@ module TheFox
 			
 			def remove_fragment
 				@uri.fragment = nil
+			end
+			
+			def domain_setup
+				if !@uri.nil? && !@uri.host.nil?
+					@domain_nowww = @uri.host.sub(/^www\./, '')
+					@domain_nowww_hash = Digest::SHA256.hexdigest(@domain_nowww)
+					@domain_original_hash = Digest::SHA256.hexdigest(@uri.host)
+					@domain_hash_id_key_name = "domains:id:#{@domain_nowww_hash}"
+				end
 			end
 		end
 		

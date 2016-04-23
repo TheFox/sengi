@@ -36,15 +36,15 @@ urls = opts.parse(ARGV)
 Resque.redis = '127.0.0.1:7000'
 urls.each_with_index do |url, index|
 	if @options[:queue]
-		Resque.enqueue(TheFox::Sengi::Crawler, url)
+		Resque.enqueue(TheFox::Sengi::CrawlerWorker, url)
 	elsif @options[:schedule]
 		queued_time = (TheFox::Sengi::URL_DELAY + (TheFox::Sengi::URL_SEPARATE_DELAY * index)).seconds.from_now
 		
 		puts "now        #{Time.now.strftime('%F %T %z')}"
 		puts "queued for #{queued_time}"
 		
-		Resque.enqueue_at(queued_time, TheFox::Sengi::Crawler, url)
+		Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, url)
 	else
-		TheFox::Sengi::Crawler.perform(url)
+		TheFox::Sengi::CrawlerWorker.perform(url)
 	end
 end

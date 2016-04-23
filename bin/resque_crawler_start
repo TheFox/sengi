@@ -16,4 +16,4 @@ export INTERVAL=1
 #export COUNT=1
 #export BACKGROUND=yes
 
-time rake resque:work
+time rake resque:work --trace

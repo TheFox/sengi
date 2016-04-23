@@ -6,7 +6,7 @@ require 'sengi'
 
 class TestCrawler < MiniTest::Test
 	def test_base
-		crawler = TheFox::Sengi::Crawler.new
+		crawler = TheFox::Sengi::Crawler.new(nil, 0, 0)
 		
 		assert_equal('TheFox::Sengi::Crawler', crawler.class.to_s)
 	end
