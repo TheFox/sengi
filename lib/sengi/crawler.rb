@@ -44,7 +44,7 @@ module TheFox
 				
 				insert_url
 				puts "\t" + "url: #{@uri.id} ignored=#{@uri.is_ignored ? 'YES' : 'no'}"
-				#return if @uri.is_ignored
+				return if @uri.is_ignored
 				
 				insert_domain
 				puts "\t" + "domain id: #{@uri.domain_id}"
