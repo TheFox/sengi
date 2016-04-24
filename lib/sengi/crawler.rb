@@ -338,12 +338,20 @@ module TheFox
 							# end
 						end
 					}
-					.select{ |link| !link.nil? && link.is_valid? }
+					.select{ |link|
+						#puts "link: #{link.class}"
+						!link.nil? &&
+						link.is_valid? &&
+						(
+							!@options['relative'] ||
+							link.is_relative?(@uri)
+						)
+					}
 					.sort{ |uri_a, uri_b|
 						uri_a.weight(@uri) <=> uri_b.weight(@uri)
 					}
 					.each_with_index{ |new_uri, index|
-						#puts "index #{index} #{new_uri}"
+						#puts "index #{index} #{new_uri} #{new_uri.is_relative?(@uri)}"
 						enqueue(new_uri, index)
 					}
 			end

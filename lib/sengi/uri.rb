@@ -206,6 +206,11 @@ module TheFox
 				self.class.new(URI.join(@uri, suburi.ruri).to_s)
 			end
 			
+			def is_relative?(uri = nil)
+				@uri_class == URI::Generic ||
+				(!uri.nil? && uri.ruri.host == @uri.host)
+			end
+			
 			private
 			
 			def validate

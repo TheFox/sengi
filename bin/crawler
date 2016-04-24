@@ -11,6 +11,7 @@ require 'sengi'
 @options = {
 	:queue => false,
 	:schedule => false,
+	:relative => false,
 }
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: crawler [options] <url...>'
@@ -22,6 +23,10 @@ opts = OptionParser.new do |o|
 	
 	o.on_tail('-s', '--schedule', 'Schedule a URL to be enqueued.') do
 		@options[:schedule] = true
+	end
+	
+	o.on_tail('-r', '--relative', 'Follow only relative links.') do
+		@options[:relative] = true
 	end
 	
 	o.on_tail('-h', '--help', 'Show this message.') do
