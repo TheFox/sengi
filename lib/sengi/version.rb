@@ -1,8 +1,8 @@
 
 module TheFox
 	module Sengi
-		VERSION = '0.1.0-dev.3'
-		DATE = '2016-04-23'
+		VERSION = '0.1.0-dev.4'
+		DATE = '2016-04-24'
 		HOMEPAGE = 'https://github.com/TheFox/sengi'
 		
 		#HTTP_USER_AGENT = "Sengi SearchENGIne/#{VERSION}"
@@ -12,5 +12,6 @@ module TheFox
 		
 		URL_DELAY = 5
 		URL_SEPARATE_DELAY = 5
+		URL_RESCHEDULE = 300
 	end
 end

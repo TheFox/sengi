@@ -126,14 +126,36 @@ module TheFox
 					@redis.write(['GET', @uri.hash_id_key_name])
 					@uri.id = @redis.read
 					
-					# Increase the URL attempts.
-					@redis.write(['HINCRBY', @uri.key_name, 'request_attempts', 1])
-					@redis.read
+					@redis.write(['HGETALL', @uri.key_name])
+					redis_uri = Hash[*@redis.read]
+					#pp redis_uri
 					
-					@redis.write(['HSET', @uri.key_name, 'request_attempt_last', Time.now.strftime('%F %T %z')])
-					@redis.read
+					@uri.is_ignored = redis_uri['is_ignored'].to_i.to_b
+					request_attempts = redis_uri['request_attempts'].to_i
 					
-					@uri.is_ignored = true
+					puts "\t" + "request attempts: #{request_attempts}"
+					
+					if !@uri.is_ignored && request_attempts >= 3
+						# Ignore the URL if it has already X attempts.
+						
+						@uri.is_ignored = true
+						
+						# Ignore the URL.
+						@redis.write(['HMSET', @uri.key_name,
+							'is_ignored', 1,
+							'ignored_at', Time.now.strftime('%F %T %z'),
+							])
+						@redis.read
+					end
+					
+					# Increase the URL attempts, even if the URL will be ignored.
+					# @redis.write(['HINCRBY', @uri.key_name, 'request_attempts', 1])
+					# @redis.read
+					@redis.write(['HMSET', @uri.key_name,
+						'request_attempts', request_attempts + 1,
+						'request_attempt_last', Time.now.strftime('%F %T %z'),
+						])
+					@redis.read
 				else
 					# New URL. Increase the URLs ID.
 					@redis.write(['INCR', 'urls:id'])
@@ -151,6 +173,7 @@ module TheFox
 						'level', @options['level'],
 						'is_blacklisted', @uri.is_blacklisted.to_i,
 						'is_ignored', 0,
+						#'ignored_at', nil,
 						'is_redirect', 0,
 						'created', now_s,
 						])
@@ -208,7 +231,7 @@ module TheFox
 					'url_id', @uri.id,
 					'user_agent', HTTP_USER_AGENT,
 					'error', 0,
-					#'error_msg', '',
+					#'error_msg', nil,
 					'created', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
@@ -246,6 +269,8 @@ module TheFox
 				rescue Exception => e
 					puts "\t" + "ERROR: #{e.class} #{e}"
 					
+					@response = nil
+					
 					# Save the error and error message to the URL Request.
 					@redis.write(['HMSET', @uri.request_key_name,
 						'error', 1,
@@ -253,10 +278,16 @@ module TheFox
 						])
 					@redis.read
 					
-					# Ignore the URL if it failed.
-					@redis.write(['HSET', @uri.key_name, 'is_ignored', 1])
-					@redis.read
+					reenqueue
+					return
 				end
+				
+				# Ignore the URL for further requests because it was successful.
+				@redis.write(['HMSET', @uri.key_name,
+					'is_ignored', 1,
+					'ignored_at', Time.now.strftime('%F %T %z'),
+					])
+				@redis.read
 			end
 			
 			def insert_response
@@ -441,6 +472,17 @@ module TheFox
 						Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
 					end
 				end
+			end
+			
+			def reenqueue
+				queued_time = URL_RESCHEDULE.seconds.from_now
+				
+				puts "\t" + "re-enqueue #{queued_time}"
+				
+				options = {
+					:level => @options['level'],
+				}
+				Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, @uri.to_s, options)
 			end
 			
 		end

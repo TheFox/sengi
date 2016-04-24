@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    sengi (0.1.0.pre.dev.3)
+    sengi (0.1.0.pre.dev.4)
       activesupport (~> 4.2)
       cookiejar (~> 0.3)
       hiredis (~> 0.6)
