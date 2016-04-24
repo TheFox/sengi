@@ -104,6 +104,20 @@ class TestUri < MiniTest::Test
 		assert_equal('http://www.example2.com/test2.html', uri3.to_s)
 	end
 	
+	def test_is_relative
+		uri1 = TheFox::Sengi::Uri.new('index1.html')
+		uri2 = TheFox::Sengi::Uri.new('index2.html')
+		assert_equal(true, uri2.is_relative?(uri1))
+		
+		uri1 = TheFox::Sengi::Uri.new('http://www.example.com')
+		uri2 = TheFox::Sengi::Uri.new('index.html')
+		assert_equal(true, uri2.is_relative?(uri1))
+		
+		uri1 = TheFox::Sengi::Uri.new('http://www.example1.com/index.html')
+		uri2 = TheFox::Sengi::Uri.new('http://www.example2.com/index.html')
+		assert_equal(false, uri2.is_relative?(uri1))
+	end
+	
 	def test_host_downcase
 		uri = TheFox::Sengi::Uri.new('http://www.EXAMPLE.com/Index.html')
 		
