@@ -25,6 +25,7 @@ module TheFox
 				@options = options
 				
 				@options['relative'] = false if !@options.has_key?('relative')
+				@options['debug'] = false if !@options.has_key?('debug')
 				@options['level'] = 0 if !@options.has_key?('level')
 				#pp @options
 				
@@ -47,7 +48,7 @@ module TheFox
 				
 				insert_url
 				puts "\t" + "url: #{@uri.id} ignored=#{@uri.is_ignored ? 'YES' : 'no'}"
-				return if @uri.is_ignored
+				return if @uri.is_ignored && !@options['debug']
 				
 				insert_domain
 				puts "\t" + "domain id: #{@uri.domain_id}"

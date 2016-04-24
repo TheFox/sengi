@@ -9,24 +9,29 @@ require 'sengi'
 
 
 @options = {
-	:queue => false,
-	:schedule => false,
-	:relative => false,
+	'queue' => false,
+	'schedule' => false,
+	'relative' => false,
+	'debug' => false,
 }
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: crawler [options] <url...>'
 	o.separator('')
 	
-	o.on_tail('-q', '--queue', 'Enqueue a URL.') do
-		@options[:queue] = true
+	o.on('-q', '--queue', 'Enqueue a URL.') do
+		@options['queue'] = true
 	end
 	
-	o.on_tail('-s', '--schedule', 'Schedule a URL to be enqueued.') do
-		@options[:schedule] = true
+	o.on('-s', '--schedule', 'Schedule a URL to be enqueued.') do
+		@options['schedule'] = true
 	end
 	
-	o.on_tail('-r', '--relative', 'Follow only relative links.') do
-		@options[:relative] = true
+	o.on('-r', '--relative', 'Follow only relative links.') do
+		@options['relative'] = true
+	end
+	
+	o.on('-d', 'Debug') do
+		@options['debug'] = true
 	end
 	
 	o.on_tail('-h', '--help', 'Show this message.') do
@@ -40,9 +45,9 @@ urls = opts.parse(ARGV)
 
 Resque.redis = '127.0.0.1:7000'
 urls.each_with_index do |url, index|
-	if @options[:queue]
+	if @options['queue']
 		Resque.enqueue(TheFox::Sengi::CrawlerWorker, url, @options)
-	elsif @options[:schedule]
+	elsif @options['schedule']
 		queued_time = (TheFox::Sengi::URL_DELAY + (TheFox::Sengi::URL_SEPARATE_DELAY * index)).seconds.from_now
 		
 		puts "now        #{Time.now.strftime('%F %T %z')}"
