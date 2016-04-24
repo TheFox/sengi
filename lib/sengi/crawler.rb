@@ -26,6 +26,7 @@ module TheFox
 				
 				@options['relative'] = false if !@options.has_key?('relative')
 				@options['debug'] = false if !@options.has_key?('debug')
+				@options['parent_id'] = 0 if !@options.has_key?('parent_id')
 				@options['level'] = 0 if !@options.has_key?('level')
 				#pp @options
 				
