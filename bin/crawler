@@ -10,7 +10,7 @@ require 'sengi'
 
 @options = {
 	'queue' => false,
-	'schedule' => false,
+	'serial' => false,
 	'relative' => false,
 	'debug' => false,
 }
@@ -22,11 +22,18 @@ opts = OptionParser.new do |o|
 		@options['queue'] = true
 	end
 	
-	o.on('-s', '--schedule', 'Schedule a URL to be enqueued.') do
-		@options['schedule'] = true
+	o.on('-s', '--serial', 'Schedule the URLs serial.') do
+		# Set this option to true to schedule the URLs serial.
+		# The Redis key 'urls:schedule:last' will be used to store the last
+		# used schedule time and URL_DELAY will be added to create a new
+		# schedule time for the new URL.
+		# Otherwise if this option isn't used URL_DELAY will be added
+		# to the current time.
+		@options['serial'] = true
 	end
 	
 	o.on('-r', '--relative', 'Follow only relative links.') do
+		# And also URLs with the same host.
 		@options['relative'] = true
 	end
 	
@@ -47,13 +54,6 @@ Resque.redis = '127.0.0.1:7000'
 urls.each_with_index do |url, index|
 	if @options['queue']
 		Resque.enqueue(TheFox::Sengi::CrawlerWorker, url, @options)
-	elsif @options['schedule']
-		queued_time = (TheFox::Sengi::URL_DELAY + (TheFox::Sengi::URL_SEPARATE_DELAY * index)).seconds.from_now
-		
-		puts "now        #{Time.now.strftime('%F %T %z')}"
-		puts "queued for #{queued_time}"
-		
-		Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, url, @options)
 	else
 		TheFox::Sengi::CrawlerWorker.perform(url, @options)
 	end

@@ -24,8 +24,10 @@ module TheFox
 				@url = url
 				@options = options
 				
+				@options['serial'] = false if !@options.has_key?('serial')
 				@options['relative'] = false if !@options.has_key?('relative')
 				@options['debug'] = false if !@options.has_key?('debug')
+				
 				@options['parent_id'] = 0 if !@options.has_key?('parent_id')
 				@options['level'] = 0 if !@options.has_key?('level')
 				#pp @options
@@ -460,12 +462,42 @@ module TheFox
 				
 				if new_uri.is_valid?
 					new_uri_s = new_uri.to_s
+					
 					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
+					
+					if @options['serial']
+						
+						# Check it another process is currently using 'urls:schedule:last'.
+						@redis.write(['GET', 'urls:schedule:lock'])
+						lock = @redis.read.to_i.to_b
+						while lock
+							@redis.write(['GET', 'urls:schedule:lock'])
+							lock = @redis.read.to_i.to_b
+							sleep 0.1
+						end
+						
+						# Lock 'urls:schedule:last' for other processes.
+						@redis.write(['INCR', 'urls:schedule:lock'])
+						@redis.read
+						
+						@redis.write(['GET', 'urls:schedule:last'])
+						queued_time = @redis.read
+						
+						queued_time = (queued_time.nil? ? Time.now : Time.parse(queued_time)) + URL_DELAY
+						
+						@redis.write(['SET', 'urls:schedule:last', queued_time.strftime('%F %T %z')])
+						@redis.read
+						
+						# Unlock 'urls:schedule:last' for other processes.
+						@redis.write(['DECR', 'urls:schedule:lock'])
+						@redis.read
+					end
 					
 					puts "\t" + "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
 					
 					if !debug
 						options = {
+							'serial' => @options['serial'],
 							'relative' => @options['relative'],
 							'parent_id' => @uri.id,
 							'level' => @options['level'] + 1,
@@ -481,6 +513,7 @@ module TheFox
 				puts "\t" + "re-enqueue #{queued_time}"
 				
 				options = {
+					'serial' => @options['serial'],
 					'relative' => @options['relative'],
 				}
 				Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, @uri.to_s, options)
