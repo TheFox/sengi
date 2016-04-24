@@ -5,7 +5,7 @@ SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
 
 
-cd "${SCRIPT_BASEDIR}/../tmp"
+cd "${SCRIPT_BASEDIR}/.."
 
 which -a redis-server &> /dev/null
-redis-server ../config/redis.conf
+redis-server config/redis.conf

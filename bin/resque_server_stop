@@ -9,4 +9,4 @@ SCRIPT_BASENAME=$(basename $0)
 
 cd "${SCRIPT_BASEDIR}/.."
 
-resque-web -F -L --host 127.0.0.1 --port 8282 --pid-file ./run/resque_server.pid config/resque_server_config.rb
+kill $(cat ./run/resque_server.pid)

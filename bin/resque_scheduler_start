@@ -11,4 +11,4 @@ cd "${SCRIPT_BASEDIR}/.."
 export PIDFILE=./run/queue_scheduler.pid
 export RESQUE_SCHEDULER_INTERVAL=1
 
-time rake resque:scheduler --trace
+rake resque:scheduler --trace &> tmp/resque_scheduler.log < /dev/null &
