@@ -46,7 +46,7 @@ module TheFox
 				redis_setup
 				
 				uri_setup
-				puts "#{Time.now.strftime('%F %T %z')} perform: #{@options['parent_id']} #{@options['level']} #{@uri}"
+				puts "#{Time.now.strftime('%F %T')} perform: #{@options['parent_id']} #{@options['level']} #{@options['relative'] ? 'y' : 'n'} #{@uri}"
 				
 				check_blacklist
 				puts "\t" + "blacklisted: #{@uri.is_blacklisted ? 'YES' : 'no'}"
