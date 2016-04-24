@@ -155,7 +155,7 @@ module TheFox
 					# @redis.read
 					@redis.write(['HMSET', @uri.key_name,
 						'request_attempts', request_attempts + 1,
-						'request_attempt_last', Time.now.strftime('%F %T %z'),
+						'request_attempt_last_at', Time.now.strftime('%F %T %z'),
 						])
 					@redis.read
 				else
@@ -170,14 +170,14 @@ module TheFox
 						'url', @uri.to_s,
 						'hash', @uri.to_hash,
 						'request_attempts', 1,
-						'request_attempt_last', now_s,
+						'request_attempt_last_at', now_s,
 						'parent_id', @options['parent_id'],
 						'level', @options['level'],
 						'is_blacklisted', @uri.is_blacklisted.to_i,
 						'is_ignored', 0,
 						#'ignored_at', nil,
 						'is_redirect', 0,
-						'created', now_s,
+						'created_at', now_s,
 						])
 					@redis.read
 					
@@ -209,7 +209,7 @@ module TheFox
 						'domain_original', @uri.ruri.host,
 						'hash_nowww', @uri.domain_nowww_hash,
 						'hash_original', @uri.domain_original_hash,
-						'created', Time.now.strftime('%F %T %z'),
+						'created_at', Time.now.strftime('%F %T %z'),
 						])
 					@redis.read
 					
@@ -234,7 +234,7 @@ module TheFox
 					'user_agent', HTTP_USER_AGENT,
 					'error', 0,
 					#'error_msg', nil,
-					'created', Time.now.strftime('%F %T %z'),
+					'created_at', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
 				
@@ -308,7 +308,7 @@ module TheFox
 					'code', @response.code.to_i,
 					'content_type', @uri.response_content_type,
 					'request_id', @uri.request_id,
-					'created', Time.now.strftime('%F %T %z'),
+					'created_at', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
 				
@@ -434,8 +434,8 @@ module TheFox
 						'name', generator,
 						'hash', generator_hash,
 						'first_url_id', @uri.id,
-						#'last_used', Time.now.strftime('%F %T %z'),
-						'created', Time.now.strftime('%F %T %z'),
+						#'last_used_at', Time.now.strftime('%F %T %z'),
+						'created_at', Time.now.strftime('%F %T %z'),
 						])
 					@redis.read
 					
@@ -445,7 +445,7 @@ module TheFox
 				end
 				
 				# Always overwrite the last used timestamp.
-				@redis.write(['HSET', generator_key_name, 'last_used', Time.now.strftime('%F %T %z')])
+				@redis.write(['HSET', generator_key_name, 'last_used_at', Time.now.strftime('%F %T %z')])
 				@redis.read
 				
 				# Add the URL to the Generator.
