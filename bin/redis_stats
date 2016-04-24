@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e
+SCRIPT_BASEDIR=$(dirname $0)
+SCRIPT_BASENAME=$(basename $0)
+
+
+cd "${SCRIPT_BASEDIR}/../tmp"
+
+while true; do
+	redis-cli -p 7000 info | grep used_memory_human
+	sleep 10
+done
