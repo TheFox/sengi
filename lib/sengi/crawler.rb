@@ -255,6 +255,7 @@ module TheFox
 					'user_agent', HTTP_USER_AGENT,
 					'error', 0,
 					#'error_msg', nil,
+					'size', 0,
 					'created_at', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
@@ -284,6 +285,11 @@ module TheFox
 				@request['Accept'] = 'text/html'
 				@request['Accept-Encoding'] = 'gzip;q=1.0,identity;q=0.6'
 				@request['Accept-Language'] = 'en,en-US;q=0.8'
+				
+				string_io = StringIO.new
+				@request.exec(string_io, Net::HTTP::HTTPVersion, @request.path)
+				@redis.write(['HSET', @uri.request_key_name, 'size', string_io.string.length])
+				@redis.read
 				
 				begin
 					puts "\t" + 'http request'
@@ -324,11 +330,15 @@ module TheFox
 				
 				@uri.response_content_type = @response['Content-Type']
 				
+				# @TODO: response header isn't included in this size
+				response_size = @response.body.length
+				
 				# Insert the new Response.
 				@redis.write(['HMSET', @uri.response_key_name,
 					'code', @response.code.to_i,
 					'content_type', @uri.response_content_type,
 					'request_id', @uri.request_id,
+					'size', response_size,
 					'created_at', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
