@@ -6,12 +6,94 @@ require 'hiredis'
 require 'sengi'
 
 
+@redis = Hiredis::Connection.new
+@redis.connect('127.0.0.1', 7000)
+@redis.write(['SELECT', 1])
+@redis.read
+
 @options = {
 	:queue => false,
 }
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: config [options] <command>'
 	o.separator('')
+	
+	o.on_tail('--reset', 'Reset all.') do
+		@redis.write(['FLUSHALL'])
+		puts @redis.read
+		exit
+	end
+	
+	o.on_tail('--init', 'Set up all initial keys.') do
+		@redis.write(['SET', 'urls:schedule:last', 0])
+		puts "urls schedule last: #{@redis.read}"
+		
+		@redis.write(['SET', 'urls:schedule:last', Time.now.strftime('%F %T %z')])
+		puts "urls schedule last: #{@redis.read}"
+		
+		@redis.write(['SADD', 'domains:ignore',
+			'4chan.org',
+			'about.me',
+			'amazon',
+			'ask.fm',
+			'bitbucket.org',
+			'bit.ly', 'bitly.com',
+			'bbc.com',
+			'blockchain.info',
+			'blogger.com',
+			'blogspot',
+			'cnet.com',
+			'cnn.com',
+			'delicious.com',
+			'digg.com',
+			'disqus.com',
+			'doodle.com',
+			'dropbox.com',
+			'droplr.com',
+			'duckduckgo.com',
+			'ebay.com',
+			'facebook.com', 'fb.com', 'fb.me',
+			'flickr.com',
+			'getpocket.com',
+			'github.com',
+			'google',
+			'gravatar.com',
+			'imdb.com',
+			'imgur.com',
+			'instagram.com',
+			'jsbin.com',
+			'jsfiddle.net',
+			'keybase.io',
+			'kickstarter.com',
+			'linkedin.com',
+			'localhost',
+			'myspace.com',
+			'npmjs.com',
+			'openstreetmap.org', 'osm.org',
+			'packagist.org',
+			'pastebin.com',
+			'paypal.com',
+			'reddit.com',
+			'skype.com',
+			'slack.com',
+			'slashdot.org',
+			'soundcloud.com',
+			'thepiratebay',
+			'tumblr.com',
+			'twitpic.com',
+			'twitter.com',
+			'vimeo.com',
+			'wikipedia.org',
+			'willhaben.at',
+			'ycombinator.com',
+			'xing.com',
+			'yahoo.com',
+			'youtube',
+			])
+		puts "domains ignore: #{@redis.read}"
+		
+		exit
+	end
 	
 	o.on_tail('-h', '--help', 'Show this message.') do
 		puts o
@@ -25,10 +107,6 @@ ARGV << '-h' if ARGV.count == 0
 commands = opts.parse(ARGV)
 command = commands.shift
 
-redis = Hiredis::Connection.new
-redis.connect('127.0.0.1', 7000)
-redis.write(['SELECT', 1])
-
 if command == 'domain'
 	subcommand = commands.shift
 	
@@ -37,8 +115,8 @@ if command == 'domain'
 		
 		if subsubcommand == 'add'
 			commands.each do |domain|
-				redis.write(['SADD', 'domains:ignore', domain.downcase])
-				puts redis.read
+				@redis.write(['SADD', 'domains:ignore', domain.downcase])
+				puts @redis.read
 			end
 		end
 	end
