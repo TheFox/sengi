@@ -20,10 +20,13 @@ module TheFox
 		
 		class Crawler
 			
-			def initialize(url, parent_id, level)
+			def initialize(url, options)
 				@url = url
-				@parent_id = parent_id
-				@level = level
+				@options = options
+				
+				@options['relative'] = false if !@options.has_key?('relative')
+				@options['level'] = 0 if !@options.has_key?('level')
+				#pp @options
 				
 				@redis = nil
 				@uri = nil
@@ -36,7 +39,7 @@ module TheFox
 				redis_setup
 				
 				uri_setup
-				puts "#{Time.now.strftime('%F %T %z')} perform: #{@parent_id} #{@level} #{@uri}"
+				puts "#{Time.now.strftime('%F %T %z')} perform: #{@options['parent_id']} #{@options['level']} #{@uri}"
 				
 				check_blacklist
 				puts "\t" + "blacklisted: #{@uri.is_blacklisted ? 'YES' : 'no'}"
@@ -69,7 +72,6 @@ module TheFox
 				
 				puts "\t" + 'process html meta'
 				process_html_meta
-				
 			end
 			
 			private
@@ -143,8 +145,8 @@ module TheFox
 						'hash', @uri.to_hash,
 						'request_attempts', 1,
 						'request_attempt_last', now_s,
-						'parent_id', @parent_id,
-						'level', @level,
+						'parent_id', @options['parent_id'],
+						'level', @options['level'],
 						'is_blacklisted', @uri.is_blacklisted.to_i,
 						'is_ignored', 0,
 						'is_redirect', 0,
@@ -419,10 +421,14 @@ module TheFox
 					new_uri_s = new_uri.to_s
 					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
 					
-					puts "\t" + "enqueue #{@level} #{index} #{queued_time} #{new_uri_s}"
+					puts "\t" + "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
 					
 					if !debug
-						Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, @uri.id, @level + 1)
+						options = {
+							:parent_id => @uri.id,
+							:level => @options['level'] + 1,
+						}
+						Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
 					end
 				end
 			end

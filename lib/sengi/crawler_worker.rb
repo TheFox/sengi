@@ -5,8 +5,8 @@ module TheFox
 		class CrawlerWorker
 			@queue = :crawler
 			
-			def self.perform(url, parent_id = 0, level = 0)
-				crawler = Crawler.new(url, parent_id, level)
+			def self.perform(url, options)
+				crawler = Crawler.new(url, options)
 				crawler.go
 			end
 			
