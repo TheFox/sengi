@@ -31,6 +31,15 @@ opts = OptionParser.new do |o|
 		@redis.write(['SET', 'urls:schedule:last', Time.now.strftime('%F %T %z')])
 		puts "urls schedule last: #{@redis.read}"
 		
+		@redis.write(['SET', 'urls:delay', TheFox::Sengi::URL_DELAY])
+		puts "urls delay:         #{@redis.read}"
+		
+		@redis.write(['SET', 'urls:separatedelay', TheFox::Sengi::URL_SEPARATE_DELAY])
+		puts "urls separatedelay: #{@redis.read}"
+		
+		@redis.write(['SET', 'urls:reschedule', TheFox::Sengi::URL_RESCHEDULE])
+		puts "urls reschedule:    #{@redis.read}"
+		
 		@redis.write(['SADD', 'domains:ignore',
 			'4chan.org',
 			'about.me',
@@ -90,7 +99,7 @@ opts = OptionParser.new do |o|
 			'yahoo.com',
 			'youtube',
 			])
-		puts "domains ignore: #{@redis.read}"
+		puts "domains ignore:     #{@redis.read}"
 		
 		exit
 	end

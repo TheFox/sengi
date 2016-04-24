@@ -37,6 +37,9 @@ module TheFox
 				@request = nil
 				@response = nil
 				@html_doc = nil
+				@url_delay = nil
+				@url_separate_delay = nil
+				@url_reschedule = nil
 			end
 			
 			def go
@@ -87,6 +90,24 @@ module TheFox
 					@redis.connect('127.0.0.1', 7000)
 					@redis.write(['SELECT', 1])
 					@redis.read
+				end
+				
+				@redis.write(['GET', 'urls:delay'])
+				@url_delay = @redis.read.to_i
+				if @url_delay.nil?
+					@url_delay = URL_DELAY
+				end
+				
+				@redis.write(['GET', 'urls:separatedelay'])
+				@url_separate_delay = @redis.read.to_i
+				if @url_separate_delay.nil?
+					@url_separate_delay = URL_SEPARATE_DELAY
+				end
+				
+				@redis.write(['GET', 'urls:reschedule'])
+				@url_reschedule = @redis.read.to_i
+				if @url_reschedule.nil?
+					@url_reschedule = URL_RESCHEDULE
 				end
 			end
 			
@@ -463,7 +484,7 @@ module TheFox
 				if new_uri.is_valid?
 					new_uri_s = new_uri.to_s
 					
-					queued_time = (URL_DELAY + (URL_SEPARATE_DELAY * index)).seconds.from_now
+					queued_time = (@url_delay + (@url_separate_delay * index)).seconds.from_now
 					
 					if @options['serial']
 						
@@ -483,7 +504,7 @@ module TheFox
 						@redis.write(['GET', 'urls:schedule:last'])
 						queued_time = @redis.read
 						
-						queued_time = (queued_time.nil? ? Time.now : Time.parse(queued_time)) + URL_DELAY
+						queued_time = (queued_time.nil? ? Time.now : Time.parse(queued_time)) + @url_delay
 						
 						@redis.write(['SET', 'urls:schedule:last', queued_time.strftime('%F %T %z')])
 						@redis.read
@@ -508,7 +529,7 @@ module TheFox
 			end
 			
 			def reenqueue
-				queued_time = URL_RESCHEDULE.seconds.from_now
+				queued_time = @url_reschedule.seconds.from_now
 				
 				puts "\t" + "re-enqueue #{queued_time}"
 				

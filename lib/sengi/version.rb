@@ -10,7 +10,7 @@ module TheFox
 		
 		HTTP_REFERER = 'https://www.google.com/'
 		
-		URL_DELAY = 5
+		URL_DELAY = 2
 		URL_SEPARATE_DELAY = 5
 		URL_RESCHEDULE = 300
 	end
