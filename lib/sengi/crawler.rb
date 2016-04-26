@@ -405,13 +405,7 @@ module TheFox
 						end
 					}
 					.select{ |link|
-						#puts "link: #{link.class}"
-						!link.nil? &&
-						link.is_valid? &&
-						(
-							!@options['relative'] ||
-							link.is_relative?(@uri)
-						)
+						!link.nil? && link.is_valid?
 					}
 					.sort{ |uri_a, uri_b|
 						uri_a.weight(@uri) <=> uri_b.weight(@uri)
@@ -489,59 +483,61 @@ module TheFox
 			end
 			
 			def enqueue(new_uri, index = 0, debug = false)
-				new_uri = @uri.join(new_uri)
-				
-				if new_uri.is_valid?
-					new_uri_s = new_uri.to_s
+				if !@options['relative'] || new_uri.is_relative?(@uri)
+					new_uri = @uri.join(new_uri)
 					
-					queued_time = (@url_delay + (@url_separate_delay * index)).seconds.from_now
-					
-					if @options['serial']
+					if new_uri.is_valid?
+						new_uri_s = new_uri.to_s
 						
-						# Check it another process is currently using 'urls:schedule:last'.
-						@redis.write(['GET', 'urls:schedule:lock'])
-						lock = @redis.read.to_i.to_b
-						while lock
+						queued_time = (@url_delay + (@url_separate_delay * index)).seconds.from_now
+						
+						if @options['serial']
+							
+							# Check it another process is currently using 'urls:schedule:last'.
 							@redis.write(['GET', 'urls:schedule:lock'])
 							lock = @redis.read.to_i.to_b
-							sleep 0.1
-						end
-						
-						# Lock 'urls:schedule:last' for other processes.
-						@redis.write(['INCR', 'urls:schedule:lock'])
-						@redis.read
-						
-						@redis.write(['GET', 'urls:schedule:last'])
-						queued_time = @redis.read
-						
-						if queued_time.nil?
-							queued_time = Time.now
-						else
-							queued_time = Time.parse(queued_time)
-							if queued_time < Time.now
-								queued_time = Time.now
+							while lock
+								@redis.write(['GET', 'urls:schedule:lock'])
+								lock = @redis.read.to_i.to_b
+								sleep 0.1
 							end
+							
+							# Lock 'urls:schedule:last' for other processes.
+							@redis.write(['INCR', 'urls:schedule:lock'])
+							@redis.read
+							
+							@redis.write(['GET', 'urls:schedule:last'])
+							queued_time = @redis.read
+							
+							if queued_time.nil?
+								queued_time = Time.now
+							else
+								queued_time = Time.parse(queued_time)
+								if queued_time < Time.now
+									queued_time = Time.now
+								end
+							end
+							queued_time += @url_delay
+							
+							@redis.write(['SET', 'urls:schedule:last', queued_time.strftime('%F %T %z')])
+							@redis.read
+							
+							# Unlock 'urls:schedule:last' for other processes.
+							@redis.write(['DECR', 'urls:schedule:lock'])
+							@redis.read
 						end
-						queued_time += @url_delay
 						
-						@redis.write(['SET', 'urls:schedule:last', queued_time.strftime('%F %T %z')])
-						@redis.read
+						puts "\t" + "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
 						
-						# Unlock 'urls:schedule:last' for other processes.
-						@redis.write(['DECR', 'urls:schedule:lock'])
-						@redis.read
-					end
-					
-					puts "\t" + "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
-					
-					if !debug
-						options = {
-							'serial' => @options['serial'],
-							'relative' => @options['relative'],
-							'parent_id' => @uri.id,
-							'level' => @options['level'] + 1,
-						}
-						Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
+						if !debug
+							options = {
+								'serial' => @options['serial'],
+								'relative' => @options['relative'],
+								'parent_id' => @uri.id,
+								'level' => @options['level'] + 1,
+							}
+							#Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
+						end
 					end
 				end
 			end
