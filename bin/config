@@ -12,7 +12,6 @@ require 'sengi'
 @redis.read
 
 @options = {
-	:queue => false,
 }
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: config [options] <command>'
