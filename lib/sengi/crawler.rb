@@ -514,7 +514,15 @@ module TheFox
 						@redis.write(['GET', 'urls:schedule:last'])
 						queued_time = @redis.read
 						
-						queued_time = (queued_time.nil? ? Time.now : Time.parse(queued_time)) + @url_delay
+						if queued_time.nil?
+							queued_time = Time.now
+						else
+							queued_time = Time.parse(queued_time)
+							if queued_time < Time.now
+								queued_time = Time.now
+							end
+						end
+						queued_time += @url_delay
 						
 						@redis.write(['SET', 'urls:schedule:last', queued_time.strftime('%F %T %z')])
 						@redis.read

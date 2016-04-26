@@ -27,7 +27,7 @@ opts = OptionParser.new do |o|
 		@redis.write(['SET', 'urls:schedule:lock', 0])
 		puts "urls schedule lock: #{@redis.read}"
 		
-		@redis.write(['SET', 'urls:schedule:last', Time.now.strftime('%F %T %z')])
+		@redis.write(['SET', 'urls:schedule:last', (Time.now + 180).strftime('%F %T %z')])
 		puts "urls schedule last: #{@redis.read}"
 		
 		@redis.write(['SET', 'urls:delay', TheFox::Sengi::URL_DELAY])
