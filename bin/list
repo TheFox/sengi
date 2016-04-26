@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# coding: UTF-8
+
+require 'optparse'
+require 'sengi'
+#require 'pp'
+
+
+@options = {
+}
+opts = OptionParser.new do |o|
+	o.banner = 'Usage: list'
+	o.separator('')
+	
+	#o.on('--no-scheme', "Don't print the scheme.") do
+	#end
+	
+	o.on_tail('-h', '--help', 'Show this message.') do
+		puts o
+		puts
+		exit 3
+	end
+end
+ARGV << '-h' if ARGV.count == 0
+commands = opts.parse(ARGV)
+
+@redis = Hiredis::Connection.new
+@redis.connect('127.0.0.1', 7000)
+@redis.write(['SELECT', 1])
+@redis.read
+
+commands.each do |command|
+	#puts "command: '#{command}'"
+	
+	if command == 'urls'
+		@redis.write(['GET', 'urls:id'])
+		max_url_id = @redis.read.to_i
+		
+		(1..max_url_id).each do |url_id|
+			#puts "#{url_id}"
+			
+			@redis.write(['HGETALL', "urls:#{url_id}"])
+			url = Hash[*@redis.read]
+			
+			uri = URI(url['url'])
+			
+			puts '%s' % [uri.to_s]
+		end
+	end
+end
