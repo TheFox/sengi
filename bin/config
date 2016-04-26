@@ -12,8 +12,12 @@ require 'sengi'
 @redis.read
 
 def reset
-	@redis.write(['FLUSHALL'])
-	puts "FLUSHALL:           #{@redis.read}"
+	(0..1).each do |n|
+		@redis.write(['SELECT', n])
+		@redis.read
+		@redis.write(['FLUSHDB'])
+		puts "FLUSH DB #{n}:         #{@redis.read}"
+	end
 end
 
 def init
