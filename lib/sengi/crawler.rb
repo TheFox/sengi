@@ -536,7 +536,7 @@ module TheFox
 								'parent_id' => @uri.id,
 								'level' => @options['level'] + 1,
 							}
-							#Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
+							Resque.enqueue_at(queued_time, TheFox::Sengi::CrawlerWorker, new_uri_s, options)
 						end
 					end
 				end
