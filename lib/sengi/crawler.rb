@@ -53,7 +53,7 @@ module TheFox
 				return if @uri.is_blacklisted
 				
 				insert_url
-				puts "\t" + "url: #{@uri.id} ignored=#{@uri.is_ignored ? 'YES' : 'no'}"
+				puts "\t" + "url: #{@uri.id}#{@uri.is_ignored ? ' IGNORED' : ''}"
 				return if @uri.is_ignored && !@options['debug']
 				
 				insert_domain
