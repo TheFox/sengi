@@ -13,5 +13,4 @@ cd "${SCRIPT_BASEDIR}/.."
 pid=$(cat ${PIDFILE})
 kill -QUIT ${pid}
 sleep 1
-rm ${PIDFILE}
 echo "${DATE} process exit: ${pid}" >> ${LOG}
