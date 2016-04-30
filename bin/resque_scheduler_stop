@@ -4,10 +4,9 @@ set -e
 DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
+export PIDFILE=./run/queue_scheduler.pid
 
 
 cd "${SCRIPT_BASEDIR}/.."
 
-export PIDFILE=./run/queue_scheduler.pid
-
-kill -QUIT $(cat $PIDFILE) && rm ${PIDFILE}
+kill -QUIT $(cat ${PIDFILE}) && rm ${PIDFILE}

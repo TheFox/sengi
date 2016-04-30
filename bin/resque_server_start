@@ -4,8 +4,10 @@ set -e
 DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
+PIDFILE=./run/resque_server.pid
+LOG=tmp/resque_server.log
 
 
 cd "${SCRIPT_BASEDIR}/.."
 
-resque-web -F -L --host 127.0.0.1 --port 8282 --pid-file ./run/resque_server.pid config/resque_server_config.rb &> tmp/resque_server.log < /dev/null &
+resque-web -F -L --host 127.0.0.1 --port 8282 --pid-file ${PIDFILE} config/resque_server_config.rb &> ${LOG} < /dev/null &

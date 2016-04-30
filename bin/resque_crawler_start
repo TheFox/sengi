@@ -15,5 +15,6 @@ export PIDFILE=./run/resque_${QUEUE}_${id}.pid
 export INTERVAL=1
 #export COUNT=1
 #export BACKGROUND=yes
+LOG=tmp/resque_${QUEUE}_${id}.log
 
-rake resque:work --trace &> tmp/resque_${QUEUE}_${id}.log < /dev/null &
+rake resque:work --trace &> ${LOG} < /dev/null &

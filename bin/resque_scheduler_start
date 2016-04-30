@@ -4,11 +4,11 @@ set -e
 DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
 SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
+export PIDFILE=./run/queue_scheduler.pid
+export RESQUE_SCHEDULER_INTERVAL=1
+LOG=tmp/resque_scheduler.log
 
 
 cd "${SCRIPT_BASEDIR}/.."
 
-export PIDFILE=./run/queue_scheduler.pid
-export RESQUE_SCHEDULER_INTERVAL=1
-
-rake resque:scheduler --trace &> tmp/resque_scheduler.log < /dev/null &
+rake resque:scheduler --trace &> ${LOG} < /dev/null &
