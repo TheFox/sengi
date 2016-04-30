@@ -74,6 +74,10 @@ module TheFox
 					puts "\t" + "       reason: #{@uri.is_ignored_reason}"
 					return
 				end
+				if @html_doc.nil?
+					puts "\t" + '       HTML INVALID'
+					return
+				end
 				
 				puts "\t" + 'process html links'
 				process_html_links
