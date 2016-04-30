@@ -3,7 +3,6 @@
 
 require 'optparse'
 require 'sengi'
-#require 'pp'
 
 
 @options = {
@@ -29,22 +28,70 @@ commands = opts.parse(ARGV)
 @redis.write(['SELECT', 1])
 @redis.read
 
-commands.each do |command|
-	#puts "command: '#{command}'"
+command = commands.shift
+
+if command == 'urls'
+	@redis.write(['GET', 'urls:id'])
+	urls_id = @redis.read.to_i
 	
-	if command == 'urls'
-		@redis.write(['GET', 'urls:id'])
-		max_url_id = @redis.read.to_i
-		
-		(1..max_url_id).each do |url_id|
-			#puts "#{url_id}"
-			
-			@redis.write(['HGETALL', "urls:#{url_id}"])
-			url = Hash[*@redis.read]
-			
+	(1..urls_id).each do |url_id|
+		@redis.write(['HGETALL', "urls:#{url_id}"])
+		raw_url = @redis.read
+		if raw_url.length > 0
+			url = Hash[*raw_url]
 			uri = URI(url['url'])
-			
 			puts '%s' % [uri.to_s]
 		end
 	end
+elsif command == 'stats'
+	traffic_out = 0
+	traffic_in = 0
+	
+	@redis.write(['GET', "urls:id"])
+	urls_id = @redis.read.to_i
+	
+	@redis.write(['GET', "requests:id"])
+	requests_id = @redis.read.to_i
+	
+	@redis.write(['GET', "responses:id"])
+	responses_id = @redis.read.to_i
+	
+	(1..urls_id).each do |url_id|
+		@redis.write(['HGETALL', "urls:#{url_id}"])
+		raw_url = @redis.read
+		if raw_url.length > 0
+			url = Hash[*raw_url]
+			
+			@redis.write(['SMEMBERS', "urls:#{url_id}:requests"])
+			request_ids = @redis.read.map{ |rid| rid.to_i }
+			request_ids.each do |request_id|
+				@redis.write(['HGETALL', "requests:#{request_id}"])
+				raw_request = @redis.read
+				if raw_request.length > 0
+					request = Hash[*raw_request]
+					traffic_out += request['size'].to_i
+				end
+			end
+			
+			@redis.write(['SMEMBERS', "urls:#{url_id}:responses"])
+			response_ids = @redis.read.map{ |rid| rid.to_i }
+			response_ids.each do |response_id|
+				@redis.write(['HGETALL', "responses:#{response_id}"])
+				raw_response = @redis.read
+				if raw_response.length > 0
+					response = Hash[*raw_response]
+					traffic_in += response['size'].to_i
+				end
+			end
+		end
+	end
+	
+	puts "urls id:       %6d" % [urls_id]
+	puts "requests id:   %6d" % [requests_id]
+	puts "responses id:  %6d" % [responses_id]
+	puts
+	
+	puts 'traffic'
+	puts 'bytes out: %9d' % [traffic_out]
+	puts 'bytes in:  %9d' % [traffic_in]
 end
