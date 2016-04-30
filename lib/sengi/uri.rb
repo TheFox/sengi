@@ -27,6 +27,7 @@ module TheFox
 				@request_key_name = nil
 				@response_id = nil
 				@response_key_name = nil
+				@response_size = 0
 				@response_content_type = ''
 				
 				begin
@@ -158,6 +159,14 @@ module TheFox
 			
 			def response_key_name
 				@response_key_name
+			end
+			
+			def response_size=(response_size)
+				@response_size = response_size.to_s
+			end
+			
+			def response_size
+				@response_size
 			end
 			
 			def response_content_type=(response_content_type)

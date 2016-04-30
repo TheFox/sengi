@@ -1,6 +1,4 @@
 
-require 'pp'
-
 require 'uri'
 require 'net/http'
 require 'hiredis'
@@ -67,7 +65,7 @@ module TheFox
 				return if @response.nil?
 				
 				insert_response
-				puts "\t" + "response: #{@uri.response_id}"
+				puts "\t" + "response: #{@uri.response_id} #{@uri.response_size}"
 				
 				puts "\t" + 'process http response'
 				process_http_response
@@ -333,17 +331,28 @@ module TheFox
 				@redis.write(['SADD', "urls:#{@uri.id}:responses", @uri.response_id])
 				@redis.read
 				
-				@uri.response_content_type = @response['Content-Type']
+				# This is still too inaccurate.
+				response_size = @response.header.to_hash.map{ |k, v|
+					vs = ''
+					if v.is_a?(Array)
+						vs = v.join(' ')
+					else
+						vs = v
+					end
+					"#{k}: #{vs}"
+				}.join("\r\n").length + 4
 				
-				# @TODO: response header isn't included in this size
-				response_size = @response.body.length
+				response_size += @response.body.length
+				
+				@uri.response_size = response_size
+				@uri.response_content_type = @response['Content-Type']
 				
 				# Insert the new Response.
 				@redis.write(['HMSET', @uri.response_key_name,
 					'code', @response.code.to_i,
 					'content_type', @uri.response_content_type,
 					'request_id', @uri.request_id,
-					'size', response_size,
+					'size', @uri.response_size,
 					'created_at', Time.now.strftime('%F %T %z'),
 					])
 				@redis.read
