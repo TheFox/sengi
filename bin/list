@@ -2,6 +2,8 @@
 # coding: UTF-8
 
 require 'optparse'
+require 'active_support'
+require 'active_support/core_ext/numeric/conversions'
 require 'sengi'
 
 
@@ -92,6 +94,6 @@ elsif command == 'stats'
 	puts
 	
 	puts 'traffic'
-	puts 'bytes out: %9d' % [traffic_out]
-	puts 'bytes in:  %9d' % [traffic_in]
+	puts 'bytes out: %9d (%s)' % [traffic_out, traffic_out.to_s(:human_size, precision: 2)]
+	puts 'bytes in:  %9d (%s)' % [traffic_in, traffic_in.to_s(:human_size, precision: 2)]
 end
