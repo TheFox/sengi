@@ -26,7 +26,7 @@ To get a Resque web dashboard at <http://localhost:8282>, run:
 
 	./bin/resque_server
 
-Setup Sengi:
+Init Sengi. This sets default variables to Redis and a blacklist of the deepweb.
 
 	RUBYOPT=-rbundler/setup ruby ./bin/config --init
 
