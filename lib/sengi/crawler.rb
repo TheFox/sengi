@@ -71,8 +71,11 @@ module TheFox
 				
 				puts "\t" + 'process http response'
 				process_http_response
-				puts "\t" + "http response: #{@html_doc.nil? ? 'INVALID' : 'ok'}"
-				return if @html_doc.nil?
+				puts "\t" + "http response: #{@uri.is_ignored ? 'INVALID' : 'ok'}"
+				if @uri.is_ignored
+					puts "\t" + "       reason: #{@uri.is_ignored_reason}"
+					return
+				end
 				
 				puts "\t" + 'process html links'
 				process_html_links
@@ -368,6 +371,7 @@ module TheFox
 					else
 						# Ignore the URL if the response content type isn't HTML.
 						@uri.is_ignored = true
+						@uri.is_ignored_reason = "wrong content type: #{@uri.response_content_type}"
 					end
 				elsif code >= 301 && code <= 399
 					@redis.write(['HSET', @uri.key_name, 'is_redirect', 1])
@@ -381,6 +385,7 @@ module TheFox
 					end
 				else
 					@uri.is_ignored = true
+					@uri.is_ignored_reason = "wrong code: #{code}"
 				end
 				
 				if @uri.is_ignored

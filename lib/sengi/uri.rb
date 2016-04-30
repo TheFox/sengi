@@ -72,6 +72,14 @@ module TheFox
 				@is_ignored
 			end
 			
+			def is_ignored_reason=(is_ignored_reason)
+				@is_ignored_reason = is_ignored_reason
+			end
+			
+			def is_ignored_reason
+				@is_ignored_reason
+			end
+			
 			# def hash_id_key_name=(hash_id_key_name)
 			# 	@hash_id_key_name = hash_id_key_name
 			# end
