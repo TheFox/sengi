@@ -13,4 +13,4 @@ cd "${SCRIPT_BASEDIR}/.."
 export QUEUE=crawler
 export PIDFILE=./run/resque_${QUEUE}_${id}.pid
 
-kill -QUIT $(cat $PIDFILE)
+kill -QUIT $(cat $PIDFILE) && rm ${PIDFILE}

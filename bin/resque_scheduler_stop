@@ -10,4 +10,4 @@ cd "${SCRIPT_BASEDIR}/.."
 
 export PIDFILE=./run/queue_scheduler.pid
 
-kill -QUIT $(cat $PIDFILE)
+kill -QUIT $(cat $PIDFILE) && rm ${PIDFILE}
