@@ -17,10 +17,6 @@ Start Redis:
 
 	./bin/redis
 
-To ignore the deep web, run:
-
-	make import_domain_ignores
-
 Start [Resque](https://github.com/resque/resque) -- Scheduler and Worker:
 
 	./bin/resque_scheduler_start
@@ -30,11 +26,29 @@ To get a Resque web dashboard at <http://localhost:8282>, run:
 
 	./bin/resque_server
 
+Setup Sengi:
+
+	RUBYOPT=-rbundler/setup ruby ./bin/config --init
+
 ## Usage
+
+### Queue
 
 To queue a URL to be crawled, run:
 
-	./bin/crawler -q http://example.com
+	RUBYOPT=-rbundler/setup ruby ./bin/crawler -q http://example.com
+
+### Relative Links Only
+
+To crawl only relative links on `example.com`:
+
+	RUBYOPT=-rbundler/setup ruby ./bin/crawler -r http://example.com
+
+### Serial
+
+Crawl only one URL at a time. The latest datetime will be stored into Redis key `urls:schedule:last`. A new URL to crawl will be scheduled for a new datetime calculated by `urls:schedule:last + url_delay`. Where `url_delay` is the number of seconds between the scheduled URLs.
+
+	RUBYOPT=-rbundler/setup ruby ./bin/crawler -s http://example.com
 
 ## License
 
