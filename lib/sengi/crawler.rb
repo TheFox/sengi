@@ -79,6 +79,8 @@ module TheFox
 				
 				puts "\t" + 'process html meta'
 				process_html_meta
+				
+				puts "\t" + 'url done'
 			end
 			
 			private
