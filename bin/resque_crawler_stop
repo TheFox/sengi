@@ -12,5 +12,9 @@ cd "${SCRIPT_BASEDIR}/.."
 
 export QUEUE=crawler
 export PIDFILE=./run/resque_${QUEUE}_${id}.pid
+LOG=tmp/resque_${QUEUE}_${id}.log
 
-kill -QUIT $(cat ${PIDFILE}) && rm ${PIDFILE}
+pid=$(cat ${PIDFILE})
+kill -QUIT ${pid}
+rm ${PIDFILE}
+echo "${DATE} process ended: ${pid}" >> ${LOG}

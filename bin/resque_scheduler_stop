@@ -5,8 +5,13 @@ DATE=$(date +"%Y-%m-%d %H:%M:%S %z")
 SCRIPT_BASEDIR=$(dirname $0)
 SCRIPT_BASENAME=$(basename $0)
 export PIDFILE=./run/queue_scheduler.pid
+LOG=tmp/resque_scheduler.log
 
 
 cd "${SCRIPT_BASEDIR}/.."
 
-kill -QUIT $(cat ${PIDFILE}) && rm ${PIDFILE}
+pid=$(cat ${PIDFILE})
+kill -QUIT ${pid}
+sleep 1
+rm ${PIDFILE}
+echo "${DATE} process exit: ${pid}" >> ${LOG}

@@ -11,4 +11,5 @@ LOG=tmp/resque_scheduler.log
 
 cd "${SCRIPT_BASEDIR}/.."
 
+echo "${DATE} start" >> ${LOG}
 rake resque:scheduler --trace &> ${LOG} < /dev/null &
