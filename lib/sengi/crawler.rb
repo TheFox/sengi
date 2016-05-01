@@ -51,8 +51,11 @@ module TheFox
 				return if @uri.is_blacklisted
 				
 				insert_url
-				puts "\t" + "url: #{@uri.id}#{@uri.is_ignored ? ' IGNORED' : ''}"
-				return if @uri.is_ignored && !@options['debug']
+				puts "\t" + "url: #{@uri.id}"
+				if @uri.is_ignored && !@options['debug']
+					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
+					return
+				end
 				
 				insert_domain
 				puts "\t" + "domain id: #{@uri.domain_id}"
@@ -69,13 +72,13 @@ module TheFox
 				
 				puts "\t" + 'process http response'
 				process_http_response
-				puts "\t" + "http response: #{@uri.is_ignored ? 'INVALID' : 'ok'}"
+				puts "\t" + "http response"
 				if @uri.is_ignored
-					puts "\t" + "       reason: #{@uri.is_ignored_reason}"
+					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
 					return
 				end
 				if @html_doc.nil?
-					puts "\t" + '       HTML INVALID'
+					puts "\t" + 'HTML INVALID'
 					return
 				end
 				
@@ -165,17 +168,22 @@ module TheFox
 					
 					puts "\t" + "request attempts: #{request_attempts}"
 					
-					if !@uri.is_ignored && request_attempts >= 3
-						# Ignore the URL if it has already X attempts.
-						
-						@uri.is_ignored = true
-						
-						# Ignore the URL.
-						@redis.write(['HMSET', @uri.key_name,
-							'is_ignored', 1,
-							'ignored_at', Time.now.strftime('%F %T %z'),
-							])
-						@redis.read
+					if @uri.is_ignored
+						@uri.is_ignored_reason = 'already ignored'
+					else
+						if request_attempts >= 3
+							# Ignore the URL if it has already X attempts.
+							
+							@uri.is_ignored = true
+							@uri.is_ignored_reason = 'attempts >= 3'
+							
+							# Ignore the URL.
+							@redis.write(['HMSET', @uri.key_name,
+								'is_ignored', 1,
+								'ignored_at', Time.now.strftime('%F %T %z'),
+								])
+							@redis.read
+						end
 					end
 					
 					# Increase the URL attempts, even if the URL will be ignored.
