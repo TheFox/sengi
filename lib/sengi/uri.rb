@@ -14,6 +14,7 @@ module TheFox
 				@hash = nil
 				@is_blacklisted = nil
 				@is_ignored = nil
+				@is_ignored_reason = 'nil'
 				@hash_id_key_name = nil
 				@id = nil
 				@key_name = nil
