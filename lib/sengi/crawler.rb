@@ -24,6 +24,7 @@ module TheFox
 				
 				@options['serial'] = false if !@options.has_key?('serial')
 				@options['relative'] = false if !@options.has_key?('relative')
+				@options['force'] = false if !@options.has_key?('force')
 				@options['debug'] = false if !@options.has_key?('debug')
 				
 				@options['parent_id'] = 0 if !@options.has_key?('parent_id')
@@ -52,7 +53,7 @@ module TheFox
 				
 				insert_url
 				puts "\t" + "url: #{@uri.id}"
-				if @uri.is_ignored && !@options['debug']
+				if @uri.is_ignored && !@options['debug'] && !@options['force']
 					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
 					return
 				end
@@ -73,7 +74,7 @@ module TheFox
 				puts "\t" + 'process http response'
 				process_http_response
 				puts "\t" + "http response"
-				if @uri.is_ignored
+				if @uri.is_ignored && !@options['force']
 					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
 					return
 				end

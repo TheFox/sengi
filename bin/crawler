@@ -37,6 +37,10 @@ opts = OptionParser.new do |o|
 		@options['relative'] = true
 	end
 	
+	o.on('-f', '--force', 'Force a URL to be requested.') do
+		@options['force'] = true
+	end
+	
 	o.on('-d', 'Debug') do
 		@options['debug'] = true
 	end
