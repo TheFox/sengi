@@ -186,6 +186,12 @@ module TheFox
 				@hash
 			end
 			
+			def to_http
+				http_uri = @uri.clone
+				http_uri.scheme = 'http'
+				http_uri
+			end
+			
 			def weight(ref_uri = nil)
 				is_subdomain = false
 				

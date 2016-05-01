@@ -62,6 +62,12 @@ class TestUri < MiniTest::Test
 		assert_equal(false, uri.is_valid?)
 	end
 	
+	def test_to_http
+		uri_http = TheFox::Sengi::Uri.new('http://www.example.com/index.html')
+		uri_https = TheFox::Sengi::Uri.new('https://www.example.com/index.html')
+		assert_equal(uri_http.to_http.to_s, uri_https.to_http.to_s)
+	end
+	
 	def test_weight
 		uri = TheFox::Sengi::Uri.new('http://www.example1.com/index.html')
 		
