@@ -2,6 +2,7 @@
 .setup
 *.rdb
 /bin/dev
+/releases/
 /run/
 /tmp/
 README.html
