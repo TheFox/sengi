@@ -51,7 +51,17 @@ elsif command == 'domains'
 		@redis.write(['SMEMBERS', 'domains:ignore'])
 		puts @redis.read
 	else
+		@redis.write(['GET', 'domains:id'])
+		domains_id = @redis.read.to_i
 		
+		(1..domains_id).each do |domain_id|
+			@redis.write(['HGETALL', "domains:#{domain_id}"])
+			raw_domain = @redis.read
+			if raw_domain.length > 0
+				domain = Hash[*raw_domain]
+				puts domain['domain_nowww']
+			end
+		end
 	end
 elsif command == 'stats'
 	traffic_out = 0
