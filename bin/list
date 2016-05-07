@@ -63,6 +63,18 @@ elsif command == 'domains'
 			end
 		end
 	end
+elsif command == 'generators'
+	@redis.write(['GET', 'generators:id'])
+	generators_id = @redis.read.to_i
+	
+	(1..generators_id).each do |generator_id|
+		@redis.write(['HGETALL', "generators:#{generator_id}"])
+		raw_generator = @redis.read
+		if raw_generator.length > 0
+			generator = Hash[*raw_generator]
+			puts generator['name']
+		end
+	end
 elsif command == 'stats'
 	traffic_out = 0
 	traffic_in = 0
