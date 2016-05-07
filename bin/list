@@ -45,6 +45,14 @@ if command == 'urls'
 			puts '%s' % [uri.to_s]
 		end
 	end
+elsif command == 'domains'
+	subcommand = commands.shift
+	if subcommand == 'ignore'
+		@redis.write(['SMEMBERS', 'domains:ignore'])
+		puts @redis.read
+	else
+		
+	end
 elsif command == 'stats'
 	traffic_out = 0
 	traffic_in = 0
