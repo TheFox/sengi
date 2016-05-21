@@ -2,6 +2,7 @@
 .setup
 *.rdb
 /bin/dev
+CHANGELOG-*.txt
 /releases/
 /run/
 /tmp/
