@@ -1,7 +1,7 @@
 
 module TheFox
 	module Sengi
-		VERSION = '0.1.1-dev'
+		VERSION = '0.1.1'
 		DATE = '2016-05-21'
 		HOMEPAGE = 'https://github.com/TheFox/sengi'
 		
