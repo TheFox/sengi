@@ -1,8 +1,8 @@
 
 module TheFox
 	module Sengi
-		VERSION = '0.1.1'
-		DATE = '2016-05-21'
+		VERSION = '0.2.0-dev.1'
+		DATE = '2016-10-16'
 		HOMEPAGE = 'https://github.com/TheFox/sengi'
 		
 		#HTTP_USER_AGENT = "Sengi SearchENGIne/#{VERSION}"
