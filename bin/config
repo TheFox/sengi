@@ -5,7 +5,6 @@ require 'optparse'
 require 'hiredis'
 require 'sengi'
 
-
 @redis = Hiredis::Connection.new
 @redis.connect('127.0.0.1', 7000)
 @redis.write(['SELECT', 1])

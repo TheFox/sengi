@@ -7,7 +7,6 @@ require 'resque-scheduler'
 require 'time'
 require 'sengi'
 
-
 @options = {
 	'queue' => false,
 	'serial' => false,

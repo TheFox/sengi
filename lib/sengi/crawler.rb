@@ -48,48 +48,48 @@ module TheFox
 				puts "#{Time.now.strftime('%F %T')} perform: #{@options['parent_id']} #{@options['level']} #{@options['relative'] ? 'y' : 'n'} #{@uri}"
 				
 				check_blacklist
-				puts "\t" + "blacklisted: #{@uri.is_blacklisted ? 'YES' : 'no'}"
+				puts "\t" << "blacklisted: #{@uri.is_blacklisted ? 'YES' : 'no'}"
 				return if @uri.is_blacklisted
 				
 				insert_url
-				puts "\t" + "url: #{@uri.id}"
+				puts "\t" << "url: #{@uri.id}"
 				if @uri.is_ignored && !@options['debug'] && !@options['force']
-					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
+					puts "\t" << "ignored reason: #{@uri.is_ignored_reason}"
 					return
 				end
 				
 				insert_domain
-				puts "\t" + "domain id: #{@uri.domain_id}"
+				puts "\t" << "domain id: #{@uri.domain_id}"
 				
 				insert_request
-				puts "\t" + "request id: #{@uri.request_id}"
+				puts "\t" << "request id: #{@uri.request_id}"
 				
 				make_http_request
-				puts "\t" + "http response: #{@response.nil? ? 'FAILED' : 'ok'}"
+				puts "\t" << "http response: #{@response.nil? ? 'FAILED' : 'ok'}"
 				return if @response.nil?
 				
 				insert_response
-				puts "\t" + "response: #{@uri.response_id} #{@uri.response_size}"
+				puts "\t" << "response: #{@uri.response_id} #{@uri.response_size}"
 				
-				puts "\t" + 'process http response'
+				puts "\t" << 'process http response'
 				process_http_response
-				puts "\t" + "http response"
+				puts "\t" << "http response"
 				if @uri.is_ignored && !@options['force']
-					puts "\t" + "ignored reason: #{@uri.is_ignored_reason}"
+					puts "\t" << "ignored reason: #{@uri.is_ignored_reason}"
 					return
 				end
 				if @html_doc.nil?
-					puts "\t" + 'HTML INVALID'
+					puts "\t" << 'HTML INVALID'
 					return
 				end
 				
-				puts "\t" + 'process html links'
+				puts "\t" << 'process html links'
 				process_html_links
 				
-				puts "\t" + 'process html meta'
+				puts "\t" << 'process html meta'
 				process_html_meta
 				
-				puts "\t" + 'url done'
+				puts "\t" << 'url done'
 			end
 			
 			private
@@ -167,7 +167,7 @@ module TheFox
 					@uri.is_ignored = redis_uri['is_ignored'].to_i.to_b
 					request_attempts = redis_uri['request_attempts'].to_i
 					
-					puts "\t" + "request attempts: #{request_attempts}"
+					puts "\t" << "request attempts: #{request_attempts}"
 					
 					if @uri.is_ignored
 						@uri.is_ignored_reason = 'already ignored'
@@ -308,11 +308,11 @@ module TheFox
 				@redis.read
 				
 				begin
-					puts "\t" + 'http request'
+					puts "\t" << 'http request'
 					@response = http.request(@request)
-					puts "\t" + 'http request ok'
+					puts "\t" << 'http request ok'
 				rescue Exception => e
-					puts "\t" + "ERROR: #{e.class} #{e}"
+					puts "\t" << "ERROR: #{e.class} #{e}"
 					
 					@response = nil
 					
@@ -384,7 +384,7 @@ module TheFox
 				end
 				
 				code = @response.code.to_i
-				puts "\t" + "http response code: #{code}"
+				puts "\t" << "http response code: #{code}"
 				
 				if code == 200
 					if @uri.response_content_type[0..8] == 'text/html'
@@ -556,7 +556,7 @@ module TheFox
 							@redis.read
 						end
 						
-						puts "\t" + "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
+						puts "\t" << "enqueue #{@options['level']} #{index} #{queued_time} #{new_uri_s}"
 						
 						if !debug
 							options = {
@@ -574,7 +574,7 @@ module TheFox
 			def reenqueue
 				queued_time = @url_reschedule.seconds.from_now
 				
-				puts "\t" + "re-enqueue #{queued_time}"
+				puts "\t" << "re-enqueue #{queued_time}"
 				
 				options = {
 					'serial' => @options['serial'],

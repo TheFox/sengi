@@ -7,8 +7,7 @@ require 'active_support/core_ext/numeric/conversions'
 require 'sengi'
 
 
-@options = {
-}
+@options = Hash.new
 opts = OptionParser.new do |o|
 	o.banner = 'Usage: list'
 	o.separator('')
@@ -92,7 +91,7 @@ elsif command == 'stats'
 		@redis.write(['HGETALL', "urls:#{url_id}"])
 		raw_url = @redis.read
 		if raw_url.length > 0
-			url = Hash[*raw_url]
+			# url = Hash[*raw_url]
 			
 			@redis.write(['SMEMBERS', "urls:#{url_id}:requests"])
 			request_ids = @redis.read.map{ |rid| rid.to_i }
