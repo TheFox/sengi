@@ -3,6 +3,7 @@
 *.rdb
 /bin/dev
 CHANGELOG-*.txt
+/coverage/
 Gemfile.lock
 /releases/
 /run/

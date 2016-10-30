@@ -3,7 +3,7 @@
 		{
 			"path": ".",
 			"name": "Sengi",
-			"folder_exclude_patterns": [ ],
+			"folder_exclude_patterns": [ "coverage" ],
 			"file_exclude_patterns": [ ]
 		}
 	]
