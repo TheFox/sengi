@@ -22,14 +22,13 @@ module TheFox
 				@url = url
 				@options = options
 				
-				@options['serial'] = false if !@options.has_key?('serial')
-				@options['relative'] = false if !@options.has_key?('relative')
-				@options['force'] = false if !@options.has_key?('force')
-				@options['debug'] = false if !@options.has_key?('debug')
+				@options['serial'] ||= false
+				@options['relative'] ||= false
+				@options['force'] ||= false
+				@options['debug'] ||= false
 				
-				@options['parent_id'] = 0 if !@options.has_key?('parent_id')
-				@options['level'] = 0 if !@options.has_key?('level')
-				#pp @options
+				@options['parent_id'] ||= 0
+				@options['level'] ||= 0
 				
 				@redis = nil
 				@uri = nil
