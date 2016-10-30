@@ -3,6 +3,7 @@
 *.rdb
 /bin/dev
 CHANGELOG-*.txt
+Gemfile.lock
 /releases/
 /run/
 /tmp/
