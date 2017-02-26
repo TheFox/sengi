@@ -52,7 +52,7 @@ Crawl only one URL at a time. The latest datetime will be stored into Redis key 
 
 ## License
 
-Copyright (C) 2016 Christian Mayer <http://fox21.at>
+Copyright (C) 2016 Christian Mayer <https://fox21.at>
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

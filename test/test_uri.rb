@@ -3,8 +3,8 @@
 require 'minitest/autorun'
 require 'sengi'
 
-
 class TestUri < MiniTest::Test
+	
 	def test_base
 		uri = TheFox::Sengi::Uri.new('http://example.com')
 		
@@ -137,4 +137,5 @@ class TestUri < MiniTest::Test
 		uri = TheFox::Sengi::Uri.new('index.html#test')
 		assert_equal('index.html', uri.to_s)
 	end
+	
 end
